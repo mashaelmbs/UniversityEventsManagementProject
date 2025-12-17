@@ -1,0 +1,123 @@
+@model dynamic
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+@{
+    ViewData["Title"] = Localizer["EventStatisticsTitle"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .stat-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+        margin-bottom: 20px;
+    }
+    .stat-card:hover {
+        transform: translateY(-5px);
+    }
+    .stat-card-body {
+        padding: 25px;
+    }
+    .stat-number {
+        font-size: 36px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    .stat-label {
+        font-size: 14px;
+        color: #6c757d;
+        margin-top: 8px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-chart-bar"></i> @Localizer["EventStatisticsTitle"]: @(Model.Event?.Title ?? Localizer["Undefined"])</h1>
+        <a href="/Events/Details/@(Model.Event?.EventID ?? 0)" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> @Localizer["BackToEvent"]
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-card-body text-center">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <div class="stat-number">@Model.TotalRegistrations</div>
+                    <div class="stat-label">@Localizer["TotalEventsCount"]</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-card-body text-center">
+                    <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                    <div class="stat-number">@Model.ConfirmedRegistrations</div>
+                    <div class="stat-label">@Localizer["ConfirmedRegistrations"]</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-card-body text-center">
+                    <i class="fas fa-user-check fa-3x text-info mb-3"></i>
+                    <div class="stat-number">@Model.AttendanceCount</div>
+                    <div class="stat-label">@Localizer["AttendanceCountLabel"]</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card">
+                <div class="stat-card-body text-center">
+                    <i class="fas fa-star fa-3x text-warning mb-3"></i>
+                    <div class="stat-number">@Math.Round(Model.AverageRating, 1)</div>
+                    <div class="stat-label">@Localizer["AverageRatingLabel"]</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> @Localizer["EventInformation"]</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>@Localizer["DateCol"]:</strong> @Model.Event.EventDate.ToString("dd/MM/yyyy HH:mm")</p>
+                    <p><strong>@Localizer["Location"]:</strong> @Model.Event.Venue</p>
+                    <p><strong>@Localizer["CapacityLabel"]:</strong> @Model.Event.MaxCapacity</p>
+                    <p><strong>@Localizer["VolunteerHours"]:</strong> @Model.Event.VolunteerHours</p>
+                    <p><strong>@Localizer["Waitlist"]:</strong> @Model.WaitlistCount</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-chart-pie"></i> @Localizer["AttendanceRateLabel"]</h5>
+                </div>
+                <div class="card-body">
+                    @{
+                        var attendanceRate = Model.ConfirmedRegistrations > 0 
+                            ? Math.Round((double)Model.AttendanceCount / Model.ConfirmedRegistrations * 100, 1) 
+                            : 0;
+                    }
+                    <div class="text-center">
+                        <h2 class="text-primary">@attendanceRate%</h2>
+                        <div class="progress mt-3" style="height: 30px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: @attendanceRate%">
+                                @attendanceRate%
+                            </div>
+                        </div>
+                        <p class="mt-3 text-muted">@Model.AttendanceCount @Localizer["RegisteredFromTotal"] @Model.ConfirmedRegistrations @Localizer["Registered"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

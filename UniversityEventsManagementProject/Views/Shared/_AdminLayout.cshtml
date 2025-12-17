@@ -1,0 +1,731 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagementProject.Localization
+@using System.Globalization
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@inject IStringLocalizer Localizer
+
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture?.UICulture?.Name ?? "ar";
+    var isRtl = currentCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="@currentCulture" dir="@(isRtl ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @Localizer["UniversityEventsManagement"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @if (isRtl)
+    {
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    }
+    else
+    {
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6F4E37; /* بني غامق */
+            --secondary-color: #A67C52; /* بني فاتح */
+            --success-color: #5E8C3E; /* أخضر */
+            --danger-color: #C0392B; /* أحمر */
+            --warning-color: #E2B13C; /* أصفر */
+            --info-color: #66B2FF; /* سماوي */
+            --dark-color: #4B3621; /* داكن جداً */
+            --light-color: #EFE6DD; /* بيج فاتح */
+            --sidebar-bg: #4B3621;
+            --sidebar-hover: #6F4E37;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', 'Tahoma', Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            display: flex;
+            min-height: 100vh;
+        }
+        
+        body[dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        body[dir="ltr"] {
+            direction: ltr;
+            text-align: left;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0px;
+            line-height: 1.4;
+        }
+
+        p, span, label, a {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.8;
+        }
+
+        /* Sidebar Styles */
+        .admin-sidebar {
+            width: 260px;
+            background: linear-gradient(180deg, #4B3621 0%, #6F4E37 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            top: 0;
+            z-index: 1000;
+            transition: all 0.3s ease;
+        }
+        
+        .admin-sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 4px;
+        }
+        
+        body[dir="rtl"] .admin-sidebar {
+            right: 0;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        body[dir="ltr"] .admin-sidebar {
+            left: 0;
+            box-shadow: 4px 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .sidebar-header {
+            padding: 20px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(0,0,0,0.15);
+        }
+
+        .sidebar-header img {
+            height: 45px;
+            width: auto;
+            max-width: 160px;
+            object-fit: contain;
+            background-color: white;
+            padding: 5px 8px;
+            border-radius: 8px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 14px;
+            margin: 0;
+            color: white;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .sidebar-nav {
+            padding: 12px 0;
+        }
+
+        .sidebar-nav-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 16px;
+            margin: 2px 8px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .sidebar-nav-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .sidebar-nav-item.active {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border-inline-start: 3px solid #E2B13C;
+        }
+
+        .sidebar-nav-item i {
+            width: 18px;
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        .sidebar-nav-item.active i,
+        .sidebar-nav-item:hover i {
+            opacity: 1;
+        }
+
+        .sidebar-section-title {
+            padding: 16px 16px 6px;
+            font-size: 10px;
+            font-weight: 700;
+            color: rgba(255, 255, 255, 0.4);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 15px 0;
+        }
+
+        /* Main Content Area */
+        .admin-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        body[dir="rtl"] .admin-main {
+            margin-right: 260px;
+        }
+        
+        body[dir="ltr"] .admin-main {
+            margin-left: 260px;
+        }
+
+        .admin-header {
+            background: linear-gradient(135deg, #5D4037 0%, #6F4E37 100%);
+            padding: 12px 30px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .admin-header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-header-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            margin: 0;
+        }
+
+        .admin-header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .header-icon-btn {
+            position: relative;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 18px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        
+        .header-icon-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        .header-icon-btn .notification-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+        }
+        
+        .admin-header .btn-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .admin-header .btn-link:hover {
+            color: #ffffff !important;
+        }
+        
+        .admin-header .btn-outline-danger {
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.5);
+            background: transparent;
+            font-size: 14px;
+            padding: 6px 15px;
+        }
+        
+        .admin-header .btn-outline-danger:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #ffffff;
+            color: #ffffff;
+        }
+        
+        .admin-header .dropdown-toggle::after {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .admin-user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .admin-user-menu img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .admin-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            color: white !important;
+            border-bottom: 3px solid white;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        body[dir="rtl"] .notification-badge {
+            right: -8px;
+        }
+        
+        body[dir="ltr"] .notification-badge {
+            left: -8px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .dropdown-item {
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+            color: var(--primary-color);
+        }
+
+        .footer {
+            background-color: #f5f0eb;
+            color: #6F4E37;
+            padding: 20px 0;
+            text-align: center;
+            margin-top: auto;
+            border-top: 1px solid #e0d6cc;
+        }
+        
+        .footer p {
+            margin: 5px 0;
+            font-size: 13px;
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @@media (max-width: 992px) {
+            .admin-sidebar {
+                width: 220px;
+            }
+
+            body[dir="rtl"] .admin-main {
+                margin-right: 220px;
+            }
+            
+            body[dir="ltr"] .admin-main {
+                margin-left: 220px;
+            }
+            
+            .sidebar-nav-item {
+                padding: 9px 12px;
+                font-size: 12px;
+            }
+
+            .admin-header {
+                padding: 15px 20px;
+            }
+
+            .admin-content {
+                padding: 20px;
+            }
+        }
+
+        @@media (max-width: 576px) {
+            .admin-sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            body[dir="rtl"] .admin-main {
+                margin-right: 0;
+            }
+            
+            body[dir="ltr"] .admin-main {
+                margin-left: 0;
+            }
+
+            .admin-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .admin-header-left,
+            .admin-header-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body dir="@(isRtl ? "rtl" : "ltr")">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+        <div class="sidebar-header">
+            <img src="/images/logouniversty.jpeg" alt="@Localizer["UniversityName"]">
+            <h2>@Localizer["AdminDashboard"]</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <!-- Main Section -->
+            <div class="sidebar-section-title">@Localizer["MainSection"]</div>
+            <a href="/" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                <i class="fas fa-globe"></i> @Localizer["Home"]
+            </a>
+            <a href="/Admin/Dashboard" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Admin" && ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="fas fa-tachometer-alt"></i> @Localizer["AdminDashboard"]
+            </a>
+
+            <!-- Events Management -->
+            <div class="sidebar-section-title">@Localizer["EventsManagement"]</div>
+            <a href="/Events" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Events" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                <i class="fas fa-calendar-alt"></i> @Localizer["Events"]
+            </a>
+            <a href="/Events/Create" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Events" && ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")">
+                <i class="fas fa-plus-circle"></i> @Localizer["CreateNewEvent"]
+            </a>
+            <a href="/Admin/ManageEvents" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageEvents" ? "active" : "")">
+                <i class="fas fa-list"></i> @Localizer["ManageEvents"]
+            </a>
+
+            <!-- Clubs Management -->
+            <div class="sidebar-section-title">@Localizer["StudentClubs"]</div>
+            <a href="/Clubs" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clubs" && ViewContext.RouteData.Values["Action"]?.ToString() == "Index" ? "active" : "")">
+                <i class="fas fa-users"></i> @Localizer["StudentClubs"]
+            </a>
+            <a href="/Clubs/Create" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Clubs" && ViewContext.RouteData.Values["Action"]?.ToString() == "Create" ? "active" : "")">
+                <i class="fas fa-plus-circle"></i> إنشاء نادي جديد
+            </a>
+            <a href="/Admin/ManageClubMembers" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageClubMembers" || ViewContext.RouteData.Values["Action"]?.ToString() == "ViewClubMembers" ? "active" : "")">
+                <i class="fas fa-users-cog"></i> إدارة طلبات الانضمام
+            </a>
+
+            <!-- Users Management -->
+            <div class="sidebar-section-title">@Localizer["ManageUsers"]</div>
+            <a href="/Admin/ManageUsers" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageUsers" ? "active" : "")">
+                <i class="fas fa-users"></i> @Localizer["UsersSection"]
+            </a>
+
+            <!-- Attendance & Certificates -->
+            <div class="sidebar-section-title">@Localizer["AttendanceCertificates"]</div>
+            <a href="/Certificates/AllCertificates" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Certificates" && ViewContext.RouteData.Values["Action"]?.ToString() == "AllCertificates" ? "active" : "")">
+                <i class="fas fa-certificate"></i> @Localizer["ManageCertificates"]
+            </a>
+            <a href="/Certificates/IssueCertificate" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Certificates" && ViewContext.RouteData.Values["Action"]?.ToString() == "IssueCertificate" ? "active" : "")">
+                <i class="fas fa-plus-circle"></i> @Localizer["IssueCertificates"]
+            </a>
+
+            <!-- Reports & Analytics -->
+            <div class="sidebar-section-title">@Localizer["ReportsAnalytics"]</div>
+            <a href="/Admin/Reports" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "Reports" ? "active" : "")">
+                <i class="fas fa-chart-bar"></i> @Localizer["Reports"]
+            </a>
+            <a href="/Admin/SelectEventForStats" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "SelectEventForStats" || ViewContext.RouteData.Values["Action"]?.ToString() == "EventStatistics" ? "active" : "")">
+                <i class="fas fa-chart-pie"></i> @Localizer["Statistics"]
+            </a>
+            <a href="/Admin/SelectEventForAttendance" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "SelectEventForAttendance" || ViewContext.RouteData.Values["Action"]?.ToString() == "ViewAttendance" ? "active" : "")">
+                <i class="fas fa-clipboard-check"></i> @Localizer["ViewAttendance"]
+            </a>
+            <a href="/Admin/SelectEventForQR" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "SelectEventForQR" || ViewContext.RouteData.Values["Action"]?.ToString() == "GenerateEventQR" ? "active" : "")">
+                <i class="fas fa-qrcode"></i> @Localizer["GenerateQR"]
+            </a>
+
+            <!-- Communication -->
+            <div class="sidebar-section-title">@Localizer["Communication"]</div>
+            <a href="/Admin/ManageNotifications" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "ManageNotifications" ? "active" : "")">
+                <i class="fas fa-bell"></i> @Localizer["ManageNotifications"]
+            </a>
+            <a href="/Admin/SendNotifications" class="sidebar-nav-item @(ViewContext.RouteData.Values["Action"]?.ToString() == "SendNotifications" ? "active" : "")">
+                <i class="fas fa-paper-plane"></i> @Localizer["Notifications"]
+            </a>
+
+            <div class="sidebar-divider"></div>
+
+            <!-- User Account -->
+            <div class="sidebar-section-title">@Localizer["AccountSection"]</div>
+            <a href="/Home/Dashboard" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Home" && ViewContext.RouteData.Values["Action"]?.ToString() == "Dashboard" ? "active" : "")">
+                <i class="fas fa-tachometer-alt"></i> @Localizer["PersonalDashboard"]
+            </a>
+            <a href="/Account/Manage" class="sidebar-nav-item @(ViewContext.RouteData.Values["Controller"]?.ToString() == "Account" && ViewContext.RouteData.Values["Action"]?.ToString() == "Manage" ? "active" : "")">
+                <i class="fas fa-cog"></i> @Localizer["AccountManagement"]
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="admin-main">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="admin-header-left">
+                <h1 class="admin-header-title">@ViewData["Title"]</h1>
+            </div>
+            <div class="admin-header-right">
+                @{
+                    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+                    var isArabic = currentCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+                }
+                <!-- Notifications -->
+                <a href="/Notifications" class="header-icon-btn" title="@Localizer["Notifications"]">
+                    <i class="fas fa-bell"></i>
+                    <span id="notificationBadge" class="notification-badge" style="display:none;">0</span>
+                </a>
+                <!-- Language Switcher -->
+                <div class="dropdown">
+                    <button class="btn btn-link dropdown-toggle" type="button" id="languageMenuBtn" data-bs-toggle="dropdown">
+                        <i class="fas fa-globe"></i> @Localizer[isArabic ? "Arabic" : "English"]
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageMenuBtn">
+                        <li>
+                            <form method="post" action="/Home/SetLanguage">
+                                <input type="hidden" name="culture" value="ar" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <button type="submit" class="dropdown-item @(isArabic ? "active" : "")">
+                                    <i class="fas fa-check @(isArabic ? "" : "invisible")"></i> @Localizer["Arabic"]
+                                </button>
+                            </form>
+                        </li>
+                        <li>
+                            <form method="post" action="/Home/SetLanguage">
+                                <input type="hidden" name="culture" value="en" />
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <button type="submit" class="dropdown-item @(!isArabic ? "active" : "")">
+                                    <i class="fas fa-check @(!isArabic ? "" : "invisible")"></i> @Localizer["English"]
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+                <!-- Logout Button -->
+                <a href="/Account/Logout" class="btn btn-outline-danger">
+                    <i class="fas fa-sign-out-alt"></i> @Localizer["Logout"]
+                </a>
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="admin-content">
+            @if (TempData["Success"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> @TempData["Success"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            @if (TempData["Warning"] != null)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <p>@Html.Raw(Localizer["Copyright"])</p>
+                <p>@Localizer["UniversityName"]</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Load unread notifications count
+        $(document).ready(function() {
+            loadNotificationCount();
+            setInterval(loadNotificationCount, 30000); // Check every 30 seconds
+        });
+
+        function loadNotificationCount() {
+            $.get('/Notifications/UnreadCount', function(data) {
+                if (data.count > 0) {
+                    $('#notificationBadge').text(data.count).show();
+                } else {
+                    $('#notificationBadge').hide();
+                }
+            });
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,257 @@
+@model List<UniversityEventsManagement.Models.ApplicationUser>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["ManageUsers"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-2"><i class="fas fa-users-cog"></i> @Localizer["ManageUsers"]</h1>
+                <a href="/Admin/CreateUser" class="btn btn-primary">
+                    <i class="fas fa-user-plus"></i> إنشاء مستخدم جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="/Admin/ManageUsers" id="filterForm" dir="rtl">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label small">@Localizer["Search"]</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="searchString" class="form-control" 
+                                   placeholder="@Localizer["SearchUserPlaceholder"]" value="@ViewBag.SearchString" />
+                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label small">@Localizer["UserType"]</label>
+                        <select name="userTypeFilter" class="form-select form-select-sm">
+                            <option value="All" selected="@(ViewBag.UserTypeFilter == null || ViewBag.UserTypeFilter == "All")">@Localizer["All"]</option>
+                            <option value="Student" selected="@(ViewBag.UserTypeFilter == "Student")">@Localizer["Student"]</option>
+                            <option value="Admin" selected="@(ViewBag.UserTypeFilter == "Admin")">@Localizer["Admin"]</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label small">@Localizer["Status"]</label>
+                        <select name="statusFilter" class="form-select form-select-sm">
+                            <option value="All" selected="@(ViewBag.StatusFilter == null || ViewBag.StatusFilter == "All")">@Localizer["All"]</option>
+                            <option value="Active" selected="@(ViewBag.StatusFilter == "Active")">@Localizer["Active"]</option>
+                            <option value="Inactive" selected="@(ViewBag.StatusFilter == "Inactive")">@Localizer["InactiveStatus"]</option>
+                            <option value="Suspended" selected="@(ViewBag.StatusFilter == "Suspended")">@Localizer["SuspendedStatus"]</option>
+                        </select>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label small">@Localizer["RegistrationDateTo"]</label>
+                        <input type="date" name="dateTo" class="form-control form-control-sm" 
+                               value="@(ViewBag.DateTo?.ToString("yyyy-MM-dd") ?? "")" />
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label class="form-label small">@Localizer["RegistrationDateFrom"]</label>
+                        <input type="date" name="dateFrom" class="form-control form-control-sm" 
+                               value="@(ViewBag.DateFrom?.ToString("yyyy-MM-dd") ?? "")" />
+                    </div>
+                    
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary" id="filterToggleBtn">
+                            <i class="fas fa-filter"></i>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" dir="rtl">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["Name"]</th>
+                            <th>@Localizer["Email"]</th>
+                            <th>@Localizer["UniversityID"]</th>
+                            <th>@Localizer["UserType"]</th>
+                            <th>@Localizer["PhoneNumber"]</th>
+                            <th>@Localizer["RegistrationDate"]</th>
+                            <th>@Localizer["Status"]</th>
+                            <th style="width: 120px;">@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-4 text-muted">
+                                    <i class="fas fa-info-circle"></i> @Localizer["NoUsersFound"]
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var user in Model)
+                            {
+                                var userStatus = Localizer["InactiveStatus"];
+                                var statusClass = "warning";
+                                
+                                if (user.IsActive)
+                                {
+                                    userStatus = Localizer["Active"];
+                                    statusClass = "success";
+                                }
+
+                                var userTypeDisplay = user.UserType switch
+                                {
+                                    "Student" => Localizer["Student"].Value,
+                                    "Admin" => Localizer["Admin"].Value,
+                                    _ => user.UserType ?? Localizer["Undefined"].Value
+                                };
+                                
+                                <tr>
+                                    <!-- Name -->
+                                    <td>
+                                        @user.FirstName @user.LastName<i class="fas fa-user-circle text-success ms-1"></i>
+                                    </td>
+                                    
+                                    <!-- Email -->
+                                    <td>@user.Email</td>
+                                    
+                                    <!-- University ID -->
+                                    <td>@(string.IsNullOrEmpty(user.UniversityID) ? "-" : user.UniversityID)</td>
+                                    
+                                    <!-- User Type -->
+                                    <td>
+                                        <span class="badge bg-primary">@userTypeDisplay</span>
+                                    </td>
+                                    
+                                    <!-- Phone Number -->
+                                    <td>@(string.IsNullOrEmpty(user.PhoneNumber) ? "-" : user.PhoneNumber)</td>
+                                    
+                                    <!-- Registration Date -->
+                                    <td>@user.JoinDate.ToString("yyyy-MM-dd")</td>
+                                    
+                                    <!-- Status -->
+                                    <td>
+                                        <span class="badge bg-@statusClass">@userStatus</span>
+                                    </td>
+                                    
+                                    <!-- Actions -->
+                                    <td>
+                                        <div class="d-flex gap-1" dir="ltr">
+                                            <a href="/Admin/EditUser/@user.Id" class="btn btn-primary btn-sm" style="width: 32px; height: 32px; padding: 0;" title="@Localizer["Edit"]">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="/Admin/ViewUser/@user.Id" class="btn btn-warning btn-sm" style="width: 32px; height: 32px; padding: 0;" title="@Localizer["View"]">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-danger btn-sm" style="width: 32px; height: 32px; padding: 0;" onclick="showDeleteModal('@user.Id', '@user.FirstName @user.LastName')" title="@Localizer["Delete"]">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteUserModal" tabindex="-1" aria-labelledby="deleteUserModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header py-2 px-3">
+                <h6 class="modal-title mb-0" id="deleteUserModalLabel">
+                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>@Localizer["ConfirmDelete"]
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body py-2 px-3">
+                <p class="mb-2" style="font-size: 14px;">@Localizer["ConfirmDeleteUser"]</p>
+                <p class="text-muted small mb-1" id="deleteUserName" style="font-size: 12px;"></p>
+                <p class="text-danger small mb-0" style="font-size: 11px;">
+                    <i class="fas fa-info-circle"></i> @Localizer["CannotUndoAction"]
+                </p>
+            </div>
+            <div class="modal-footer py-2 px-3">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> @Localizer["Cancel"]
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> @Localizer["Delete"]
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var userIdToDelete = null;
+
+        // Auto-submit form on filter change
+        $(document).ready(function() {
+            $('select[name="statusFilter"], select[name="userTypeFilter"], input[type="date"]').on('change', function() {
+                $('#filterForm').submit();
+            });
+
+            // Search on Enter key
+            $('input[name="searchString"]').on('keypress', function(e) {
+                if (e.which === 13) {
+                    e.preventDefault();
+                    $('#filterForm').submit();
+                }
+            });
+        });
+
+        function showDeleteModal(userId, userName) {
+            userIdToDelete = userId;
+            $('#deleteUserName').text('@Localizer["UserLabel"] ' + userName);
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteUserModal'));
+            deleteModal.show();
+        }
+
+        $('#confirmDeleteBtn').on('click', function() {
+            if (userIdToDelete) {
+                var token = $('input[name="__RequestVerificationToken"]').val();
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/Admin/DeleteUser/' + userIdToDelete;
+                
+                var csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '__RequestVerificationToken';
+                csrfToken.value = token;
+                form.appendChild(csrfToken);
+                
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+
+        // Reset userId when modal is hidden
+        $('#deleteUserModal').on('hidden.bs.modal', function () {
+            userIdToDelete = null;
+        });
+    </script>
+}

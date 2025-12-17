@@ -1,0 +1,199 @@
+@model UniversityEventsManagement.Models.Event
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["ViewAttendance"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .attendance-table {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .table thead {
+        background: #f8f9fa;
+    }
+    .badge-present {
+        background: #28a745;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+    .badge-absent {
+        background: #dc3545;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+    .badge-registered {
+        background: #17a2b8;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-list"></i> @Localizer["ViewAttendance"]: @(Model?.Title ?? Localizer["Undefined"].Value)</h1>
+        <a href="/Events/Details/@(Model?.EventID ?? 0)" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> @Localizer["BackToEvent"]
+        </a>
+    </div>
+
+    @{
+        // Calculate event end time (assuming 1 hour duration, same as AttendanceController)
+        var eventEndTime = Model.EventDate.AddHours(1);
+        var attendanceDeadline = eventEndTime.AddMinutes(30); // 30 minutes after event ends
+        
+        // Can only determine absence after attendance deadline has passed
+        var canDetermineAbsence = DateTime.Now > attendanceDeadline;
+        var isEventStarted = DateTime.Now >= Model.EventDate;
+        
+        var totalRegistered = Model.Registrations?.Count(r => r.Status == "Confirmed") ?? 0;
+        var totalPresent = Model.Attendances?.Count(a => a.IsPresent) ?? 0;
+        var totalAbsent = canDetermineAbsence ? (totalRegistered - totalPresent) : 0;
+    }
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">@Localizer["TotalRegistered"]</h5>
+                    <h2 class="text-primary">@totalRegistered</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">@Localizer["Present"]</h5>
+                    <h2 class="text-success">@totalPresent</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h5 class="text-muted">@Localizer["Absent"]</h5>
+                    <h2 class="text-danger">@totalAbsent</h2>
+                    @if (!canDetermineAbsence)
+                    {
+                        <small class="text-muted">
+                            @if (!isEventStarted)
+                            {
+                                @Localizer["EventNotStarted"]
+                            }
+                            else
+                            {
+                                @Localizer["AttendanceStillOpen"]
+                            }
+                        </small>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card attendance-table">
+        <div class="card-header">
+            <h5><i class="fas fa-users"></i> @Localizer["AttendanceList"]</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>@Localizer["Name"]</th>
+                            <th>@Localizer["UniversityID"]</th>
+                            <th>@Localizer["Email"]</th>
+                            <th>@Localizer["Status"]</th>
+                            <th>@Localizer["RegistrationDate"]</th>
+                            <th>@Localizer["CheckInTime"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Registrations != null && Model.Registrations.Any(r => r.Status == "Confirmed"))
+                        {
+                            int index = 1;
+                            @foreach (var registration in Model.Registrations.Where(r => r.Status == "Confirmed").OrderBy(r => r.User?.FirstName))
+                            {
+                                var attendance = Model.Attendances?.FirstOrDefault(a => a.UserID == registration.UserID);
+                                var hasAttended = attendance != null && attendance.IsPresent;
+                                <tr>
+                                    <td>@index</td>
+                                    <td>@(registration.User?.FirstName ?? "") @(registration.User?.LastName ?? "")</td>
+                                    <td>@(registration.User?.UniversityID ?? "-")</td>
+                                    <td>@(registration.User?.Email ?? "-")</td>
+                                    <td>
+                                        @if (hasAttended)
+                                        {
+                                            <span class="badge-present">
+                                                <i class="fas fa-check"></i> @Localizer["Present"]
+                                            </span>
+                                        }
+                                        else if (canDetermineAbsence)
+                                        {
+                                            <span class="badge-absent">
+                                                <i class="fas fa-times"></i> @Localizer["Absent"]
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge-registered">
+                                                <i class="fas fa-user-check"></i> @Localizer["Registered"]
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @registration.RegistrationDate.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    <td>
+                                        @if (hasAttended)
+                                        {
+                                            @attendance.CheckInTime.ToString("dd/MM/yyyy HH:mm")
+                                        }
+                                        else if (canDetermineAbsence)
+                                        {
+                                            <span class="text-muted">@Localizer["NotCheckedIn"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                @if (!isEventStarted)
+                                                {
+                                                    @Localizer["EventNotStarted"]
+                                                }
+                                                else
+                                                {
+                                                    @Localizer["WaitingForCheckIn"]
+                                                }
+                                            </span>
+                                        }
+                                    </td>
+                                </tr>
+                                index++;
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-muted">
+                                    <i class="fas fa-inbox fa-3x mb-3"></i>
+                                    <p>@Localizer["NoConfirmedRegistrations"]</p>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+

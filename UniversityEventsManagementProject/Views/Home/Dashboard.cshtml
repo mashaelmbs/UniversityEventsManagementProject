@@ -1,0 +1,587 @@
+@model dynamic
+@using Microsoft.AspNetCore.Mvc.Localization
+@using System.Linq
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["PersonalDashboard"].ToString();
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<style>
+    .dashboard-wrapper {
+        animation: fadeIn 0.5s ease;
+    }
+    
+    @@keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-section {
+        background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+        border-radius: 16px;
+        padding: 30px;
+        color: white;
+        margin-bottom: 30px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .welcome-section::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 300px;
+        height: 300px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    
+    .welcome-section h1 {
+        font-size: 28px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    
+    .welcome-section p {
+        opacity: 0.9;
+        margin: 0;
+        font-size: 15px;
+    }
+
+    /* Statistics Cards */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    
+    @@media (max-width: 992px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @@media (max-width: 576px) {
+        .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 16px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s ease;
+        border: 1px solid #f0f0f0;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    }
+
+    .stat-card.blue::before { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+    .stat-card.green::before { background: linear-gradient(90deg, #10B981, #34D399); }
+    .stat-card.amber::before { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+    .stat-card.purple::before { background: linear-gradient(90deg, #8B5CF6, #A78BFA); }
+
+    .stat-icon {
+        width: 56px;
+        height: 56px;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .stat-card.blue .stat-icon { background: #EFF6FF; color: #3B82F6; }
+    .stat-card.green .stat-icon { background: #ECFDF5; color: #10B981; }
+    .stat-card.amber .stat-icon { background: #FFFBEB; color: #F59E0B; }
+    .stat-card.purple .stat-icon { background: #F5F3FF; color: #8B5CF6; }
+
+    .stat-content {
+        flex: 1;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1F2937;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6B7280;
+        font-weight: 500;
+    }
+
+    /* Section Cards */
+    .section-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        overflow: hidden;
+        margin-bottom: 24px;
+        border: 1px solid #f0f0f0;
+    }
+
+    .section-header {
+        padding: 20px 24px;
+        border-bottom: 1px solid #F3F4F6;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .section-header-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .section-header i {
+        font-size: 18px;
+        color: #6F4E37;
+    }
+
+    .section-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+
+    .section-body {
+        padding: 24px;
+    }
+
+    /* Quick Actions */
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        border: 1px solid #E5E7EB;
+        background: #FAFAFA;
+    }
+
+    .quick-action-btn:hover {
+        background: #6F4E37;
+        border-color: #6F4E37;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.2);
+    }
+
+    .quick-action-btn:hover .quick-action-icon,
+    .quick-action-btn:hover .quick-action-text {
+        color: white;
+    }
+
+    .quick-action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        background: white;
+        color: #6F4E37;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .quick-action-text {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        transition: all 0.2s ease;
+    }
+
+    /* Events List */
+    .event-item {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px;
+        border-radius: 12px;
+        background: #F9FAFB;
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+        border-right: 4px solid #6F4E37;
+    }
+    
+    body[dir="ltr"] .event-item {
+        border-right: none;
+        border-left: 4px solid #6F4E37;
+    }
+
+    .event-item:hover {
+        background: #F3F4F6;
+        transform: translateX(-3px);
+    }
+    
+    body[dir="ltr"] .event-item:hover {
+        transform: translateX(3px);
+    }
+
+    .event-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #6F4E37, #A67C52);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .event-details {
+        flex: 1;
+    }
+
+    .event-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 4px;
+    }
+
+    .event-meta {
+        display: flex;
+        gap: 16px;
+        font-size: 12px;
+        color: #6B7280;
+    }
+
+    .event-meta span {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .event-action {
+        flex-shrink: 0;
+    }
+
+    .btn-view {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 500;
+        background: #F3F4F6;
+        color: #374151;
+        border: none;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-view:hover {
+        background: #6F4E37;
+        color: white;
+    }
+
+    .btn-view-all {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        background: #6F4E37;
+        color: white;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+
+    .btn-view-all:hover {
+        background: #5D4037;
+        color: white;
+    }
+
+    /* Progress Stats */
+    .progress-stat {
+        margin-bottom: 20px;
+    }
+
+    .progress-stat-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+    }
+
+    .progress-stat-label {
+        font-size: 13px;
+        color: #6B7280;
+    }
+
+    .progress-stat-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: #6F4E37;
+    }
+
+    .progress-bar-wrapper {
+        height: 8px;
+        background: #E5E7EB;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-bar-fill {
+        height: 100%;
+        border-radius: 4px;
+        background: linear-gradient(90deg, #6F4E37, #A67C52);
+        transition: width 0.5s ease;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #9CA3AF;
+    }
+
+    .empty-state i {
+        font-size: 40px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <!-- Welcome Section -->
+    <div class="welcome-section">
+        <h1><i class="fas fa-hand-wave"></i> @Localizer["WelcomeMessage"], @(Model?.User?.FirstName ?? "")</h1>
+        <p>@Localizer["PersonalDashboard"] - @DateTime.Now.ToString("dddd, dd MMMM yyyy")</p>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+        <div class="stat-card blue">
+            <div class="stat-icon">
+                <i class="fas fa-calendar-check"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@(Model?.RegisteredEvents?.Count ?? 0)</div>
+                <div class="stat-label">@Localizer["DashboardRegisteredEvents"]</div>
+            </div>
+        </div>
+        
+        <div class="stat-card green">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@(Model?.TotalVolunteerHours ?? 0)</div>
+                <div class="stat-label">@Localizer["DashboardHours"]</div>
+            </div>
+        </div>
+        
+        <div class="stat-card amber">
+            <div class="stat-icon">
+                <i class="fas fa-award"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@(Model?.Certificates?.Count ?? 0)</div>
+                <div class="stat-label">@Localizer["DashboardCertificates"]</div>
+            </div>
+        </div>
+        
+        <div class="stat-card purple">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-content">
+                <div class="stat-value">@(Model?.Clubs?.Count ?? 0)</div>
+                <div class="stat-label">@Localizer["DashboardClubs"]</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <i class="fas fa-bolt"></i>
+                        <h3 class="section-title">@Localizer["QuickActions"]</h3>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="quick-actions-grid">
+                        <a href="/Events" class="quick-action-btn">
+                            <div class="quick-action-icon"><i class="fas fa-search"></i></div>
+                            <span class="quick-action-text">@Localizer["ExploreEvents"]</span>
+                        </a>
+                        <a href="/Registrations/MyEvents" class="quick-action-btn">
+                            <div class="quick-action-icon"><i class="fas fa-list-check"></i></div>
+                            <span class="quick-action-text">@Localizer["MyEvents"]</span>
+                        </a>
+                        <a href="/Certificates/MyCertificates" class="quick-action-btn">
+                            <div class="quick-action-icon"><i class="fas fa-certificate"></i></div>
+                            <span class="quick-action-text">@Localizer["MyCertificates"]</span>
+                        </a>
+                        <a href="/Clubs" class="quick-action-btn">
+                            <div class="quick-action-icon"><i class="fas fa-users"></i></div>
+                            <span class="quick-action-text">@Localizer["StudentClubs"]</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- My Statistics -->
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <i class="fas fa-chart-line"></i>
+                        <h3 class="section-title">@Localizer["DashboardStatsTitle"]</h3>
+                    </div>
+                </div>
+                <div class="section-body">
+                    <div class="progress-stat">
+                        <div class="progress-stat-header">
+                            <span class="progress-stat-label">@Localizer["AttendanceRate"]</span>
+                            <span class="progress-stat-value">@(Model?.AttendanceRate ?? 0)%</span>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar-fill" style="width: @(Model?.AttendanceRate ?? 0)%"></div>
+                        </div>
+                    </div>
+                    <div class="progress-stat">
+                        <div class="progress-stat-header">
+                            <span class="progress-stat-label">@Localizer["CompletedEvents"]</span>
+                            <span class="progress-stat-value">@(Model?.CompletedEvents ?? 0)</span>
+                        </div>
+                    </div>
+                    <div class="progress-stat">
+                        <div class="progress-stat-header">
+                            <span class="progress-stat-label">@Localizer["TotalRegistrations"]</span>
+                            <span class="progress-stat-value">@(Model?.RegisteredEvents?.Count ?? 0)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-8">
+            <!-- Upcoming Events -->
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <i class="fas fa-calendar-alt"></i>
+                        <h3 class="section-title">@Localizer["UpcomingEvents"]</h3>
+                    </div>
+                </div>
+                <div class="section-body">
+                    @if (Model?.UpcomingEvents != null && Model.UpcomingEvents.Count > 0)
+                    {
+                        @foreach (var evt in Model.UpcomingEvents)
+                        {
+                            <div class="event-item">
+                                <div class="event-icon">
+                                    <i class="fas fa-calendar-day"></i>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">@evt.Title</div>
+                                    <div class="event-meta">
+                                        <span><i class="far fa-calendar"></i> @evt.EventDate.ToString("dd MMM yyyy")</span>
+                                        <span><i class="fas fa-map-marker-alt"></i> @evt.Venue</span>
+                                    </div>
+                                </div>
+                                <div class="event-action">
+                                    <a href="/Events/Details/@evt.EventID" class="btn-view">@Localizer["ViewDetails"]</a>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="far fa-calendar-times"></i>
+                            <p>@Localizer["NoUpcomingEvents"]</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- My Registered Events -->
+            <div class="section-card">
+                <div class="section-header">
+                    <div class="section-header-title">
+                        <i class="fas fa-list"></i>
+                        <h3 class="section-title">@Localizer["MyRegisteredEvents"]</h3>
+                    </div>
+                    <a href="/Registrations/MyEvents" class="btn-view-all">@Localizer["ViewAll"]</a>
+                </div>
+                <div class="section-body">
+                    @if (Model?.RegisteredEvents != null && Model.RegisteredEvents.Count > 0)
+                    {
+                        @foreach (var reg in System.Linq.Enumerable.Take(Model.RegisteredEvents, 4))
+                        {
+                            var isUpcoming = reg.Event != null && reg.Event.EventDate >= DateTime.Now;
+                            <div class="event-item">
+                                <div class="event-icon" style="background: @(isUpcoming ? "linear-gradient(135deg, #10B981, #34D399)" : "linear-gradient(135deg, #6B7280, #9CA3AF)")">
+                                    <i class="fas @(isUpcoming ? "fa-check" : "fa-history")"></i>
+                                </div>
+                                <div class="event-details">
+                                    <div class="event-title">@reg.Event?.Title</div>
+                                    <div class="event-meta">
+                                        <span><i class="far fa-calendar"></i> @reg.Event?.EventDate.ToString("dd MMM yyyy")</span>
+                                        <span style="color: @(isUpcoming ? "#10B981" : "#6B7280")">
+                                            <i class="fas fa-circle" style="font-size: 6px;"></i> 
+                                            @(isUpcoming ? Localizer["ComingSoon"].ToString() : Localizer["Completed"].ToString())
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="event-action">
+                                    <a href="/Events/Details/@reg.Event?.EventID" class="btn-view">@Localizer["View"]</a>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="far fa-folder-open"></i>
+                            <p>@Localizer["NoRegistrations"]</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

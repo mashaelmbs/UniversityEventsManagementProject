@@ -1,0 +1,91 @@
+@model UniversityEventsManagement.Controllers.ManageViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["ManageAccount"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-user-circle"></i> @Localizer["Profile"]</h1>
+                <p class="text-muted mb-0">@Localizer["ProfileDescription"]</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a href="/Account/ChangePassword" class="btn btn-outline-primary">
+                    <i class="fas fa-lock"></i> @Localizer["ChangePassword"]
+                </a>
+                <a href="/Account/Enable2FA" class="btn btn-outline-success">
+                    <i class="fas fa-shield-alt"></i> @Localizer["TwoFactorAuth"]
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-id-card"></i> @Localizer["PersonalData"]</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Manage" method="post">
+                        @Html.AntiForgeryToken()
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">@Localizer["FirstName"]</label>
+                                <input asp-for="FirstName" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">@Localizer["FamilyName"]</label>
+                                <input asp-for="LastName" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">@Localizer["UniversityEmail"]</label>
+                                <input asp-for="Email" class="form-control" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">@Localizer["PhoneNumber"]</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">@Localizer["UniversityID"]</label>
+                                <input asp-for="UniversityID" class="form-control" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">@Localizer["AcademicDepartment"]</label>
+                                <input asp-for="Department" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="mt-4 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save"></i> @Localizer["SaveChanges"]
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="mb-3"><i class="fas fa-info-circle"></i> @Localizer["ImportantNotes"]</h5>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> @Localizer["EmailIDCannotBeChanged"]</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> @Localizer["UseChangePasswordButton"]</li>
+                        <li class="mb-2"><i class="fas fa-check text-success"></i> @Localizer["EnsureContactInfoCorrect"]</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

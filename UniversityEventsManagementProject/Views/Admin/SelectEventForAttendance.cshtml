@@ -1,0 +1,126 @@
+@model List<UniversityEventsManagement.Models.Event>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["ViewAttendance"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .event-select-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        cursor: pointer;
+        text-decoration: none;
+        display: block;
+        color: inherit;
+    }
+    
+    .event-select-card:hover {
+        border-color: #6F4E37;
+        transform: translateY(-3px);
+        box-shadow: 0 4px 20px rgba(111, 78, 55, 0.15);
+    }
+    
+    .event-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 10px;
+    }
+    
+    .event-meta {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        color: #6B7280;
+        font-size: 14px;
+    }
+    
+    .event-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .event-meta-item i {
+        color: #9CA3AF;
+    }
+    
+    .page-header {
+        margin-bottom: 30px;
+    }
+    
+    .page-header h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0;
+    }
+    
+    .page-header p {
+        color: #6B7280;
+        margin-top: 8px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+    }
+    
+    .empty-state i {
+        font-size: 48px;
+        color: #D1D5DB;
+        margin-bottom: 16px;
+    }
+    
+    .empty-state p {
+        color: #6B7280;
+    }
+</style>
+
+<div class="page-header">
+    <h1><i class="fas fa-clipboard-check"></i> @Localizer["ViewAttendance"]</h1>
+    <p>اختر الفعالية لعرض سجل الحضور</p>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row">
+        @foreach (var evt in Model)
+        {
+            <div class="col-md-6 col-lg-4">
+                <a href="/Admin/ViewAttendance?eventId=@evt.EventID" class="event-select-card">
+                    <div class="event-title">@evt.Title</div>
+                    <div class="event-meta">
+                        <span class="event-meta-item">
+                            <i class="far fa-calendar"></i>
+                            @evt.EventDate.ToString("dd MMM yyyy")
+                        </span>
+                        <span class="event-meta-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            @evt.Venue
+                        </span>
+                    </div>
+                </a>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <i class="fas fa-calendar-times"></i>
+        <p>@Localizer["NoEventsAvailable"]</p>
+    </div>
+}
+

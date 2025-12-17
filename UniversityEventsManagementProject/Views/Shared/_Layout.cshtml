@@ -1,0 +1,501 @@
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagementProject.Localization
+@using System.Globalization
+@inject IStringLocalizer Localizer
+
+@{
+    var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+    var currentCulture = requestCulture?.RequestCulture?.UICulture?.Name ?? "ar";
+    var isRtl = currentCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+}
+<!DOCTYPE html>
+<html lang="@currentCulture" dir="@(isRtl ? "rtl" : "ltr")">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @Localizer["UniversityEventsManagement"]</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+    @if (isRtl)
+    {
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    }
+    else
+    {
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    }
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #6F4E37; /* بني غامق */
+            --secondary-color: #A67C52; /* بني فاتح */
+            --success-color: #5E8C3E; /* أخضر */
+            --danger-color: #C0392B; /* أحمر */
+            --warning-color: #E2B13C; /* أصفر */
+            --info-color: #66B2FF; /* سماوي */
+            --dark-color: #4B3621; /* داكن جداً */
+            --light-color: #EFE6DD; /* بيج فاتح */
+        }
+
+        body {
+            font-family: 'Cairo', 'Segoe UI', 'Tahoma', Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        body[dir="rtl"] {
+            direction: rtl;
+            text-align: right;
+        }
+        
+        body[dir="ltr"] {
+            direction: ltr;
+            text-align: left;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Cairo', sans-serif;
+            font-weight: 700;
+            letter-spacing: 0px;
+            line-height: 1.4;
+        }
+
+        p, span, label, a {
+            font-family: 'Cairo', sans-serif;
+            line-height: 1.8;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            color: white !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand:hover {
+            transform: translateY(-2px);
+        }
+
+        .navbar-brand img {
+            height: 60px;
+            width: auto;
+            max-width: 200px;
+            object-fit: contain;
+            background-color: white;
+            padding: 5px;
+            border-radius: 5px;
+            margin-inline-start: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand span {
+            white-space: nowrap;
+            font-size: 1.2rem;
+        }
+
+        /* Responsive logo styles */
+        @@media (max-width: 991.98px) {
+            .navbar-brand {
+                font-size: 1rem;
+                gap: 8px;
+            }
+
+            .navbar-brand img {
+                height: 45px;
+                max-width: 150px;
+                padding: 4px;
+                margin-inline-start: 5px;
+            }
+
+            .navbar-brand span {
+                font-size: 1rem;
+            }
+        }
+
+        @@media (max-width: 575.98px) {
+            .navbar-brand {
+                font-size: 0.9rem;
+                gap: 5px;
+            }
+
+            .navbar-brand img {
+                height: 35px;
+                max-width: 120px;
+                padding: 3px;
+                margin-inline-start: 3px;
+            }
+
+            .navbar-brand span {
+                font-size: 0.85rem;
+            }
+        }
+
+        @@media (max-width: 400px) {
+            .navbar-brand span {
+                display: none;
+            }
+
+            .navbar-brand img {
+                height: 40px;
+                max-width: 100px;
+            }
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.8) !important;
+            margin: 0 10px;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+            transform: translateY(-2px);
+        }
+
+        .nav-link.active {
+            color: white !important;
+            border-bottom: 3px solid white;
+        }
+
+        .container-main {
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn {
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        }
+
+        .badge {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+
+        .event-card {
+            border-inline-start: 5px solid var(--primary-color);
+        }
+
+        .event-card:hover {
+            border-inline-start-color: var(--danger-color);
+        }
+
+        .footer {
+            background-color: #2c3e50;
+            color: white;
+            padding: 30px 0;
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -8px;
+            background-color: var(--danger-color);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        body[dir="rtl"] .notification-badge {
+            right: -8px;
+        }
+        
+        body[dir="ltr"] .notification-badge {
+            left: -8px;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .user-menu {
+            position: relative;
+        }
+
+        .dropdown-menu {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .dropdown-item {
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f0f0f0;
+            color: var(--primary-color);
+        }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">
+                <img src="/images/logouniversty.jpeg" alt="@Localizer["UniversityName"]">
+                <span>@Localizer["EventsManagement"]</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav @(isRtl ? "me-auto" : "ms-auto")">
+                    @{
+                        var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+                        var isAdmin = isAuthenticated && User.IsInRole("Admin");
+                        var isStudent = isAuthenticated && User.IsInRole("Student");
+                    }
+                    @{
+                        var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+                        var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+                    }
+                    @* إخفاء روابط الصفحة الرئيسية واتصل بنا للمدير *@
+                    @if (!isAdmin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Index" ? "active" : "")" href="/">@Localizer["Home"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Events" && currentAction == "Index" ? "active" : "")" href="/Events">@Localizer["Events"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Contact" ? "active" : "")" href="/Contact">@Localizer["Contact"]</a>
+                        </li>
+                    }
+                    @if (isAuthenticated && !isAdmin)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link @(currentController == "Home" && currentAction == "Dashboard" ? "active" : "")" href="/Home/Dashboard">
+                                <i class="fas fa-tachometer-alt"></i> @Localizer["PersonalDashboard"]
+                            </a>
+                        </li>
+                    }
+                </ul>
+                <ul class="navbar-nav">
+                    @{
+                        var requestCulture = Context.Features.Get<IRequestCultureFeature>();
+                        var currentCulture = requestCulture?.RequestCulture?.UICulture?.Name ?? "ar";
+                        var isArabic = currentCulture.StartsWith("ar", StringComparison.OrdinalIgnoreCase);
+                        var returnUrl = Context.Request.Path + Context.Request.QueryString;
+                    }
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageMenu" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-language"></i> @(isArabic ? Localizer["Arabic"] : Localizer["English"])
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageMenu">
+                            <li>
+                                <form method="post" asp-controller="Home" asp-action="SetLanguage">
+                                    <input type="hidden" name="culture" value="ar" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button type="submit" class="dropdown-item @(isArabic ? "active" : "")">
+                                        <i class="fas fa-check @(isArabic ? "" : "invisible")"></i> @Localizer["Arabic"]
+                                    </button>
+                                </form>
+                            </li>
+                            <li>
+                                <form method="post" asp-controller="Home" asp-action="SetLanguage">
+                                    <input type="hidden" name="culture" value="en" />
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button type="submit" class="dropdown-item @(!isArabic ? "active" : "")">
+                                        <i class="fas fa-check @(!isArabic ? "" : "invisible")"></i> @Localizer["English"]
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                    @if (User.Identity?.IsAuthenticated ?? false)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Notifications" style="position: relative;">
+                                <i class="fas fa-bell"></i>
+                                <span id="notificationBadge" class="notification-badge" style="display:none;">0</span>
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userMenu" role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle"></i> @Localizer["MyAccount"]
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenu">
+                                <li><a class="dropdown-item" href="/Home/Dashboard">@Localizer["PersonalDashboard"]</a></li>
+                                <li><a class="dropdown-item" href="/Account/Manage">@Localizer["AccountManagement"]</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item" href="/Account/Logout">@Localizer["Logout"]</a></li>
+                            </ul>
+                        </li>
+                    }
+                    else
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Login">@Localizer["Login"]</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Account/Register">@Localizer["Register"]</a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-main">
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle"></i> @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+        @if (TempData["Warning"] != null)
+        {
+            <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle"></i> @TempData["Warning"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        }
+
+        @RenderBody()
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>@Html.Raw(Localizer["Copyright"])</p>
+            <p>@Localizer["UniversityName"]</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        // Suppress browser extension errors that don't affect functionality
+        window.addEventListener('error', function(e) {
+            if (e.message && (
+                e.message.includes('translations') || 
+                e.message.includes('runtime.lastError') ||
+                e.message.includes('Receiving end does not exist') ||
+                e.message.includes('Could not establish connection')
+            )) {
+                e.preventDefault();
+                console.warn('Suppressed browser extension error:', e.message);
+                return true;
+            }
+        }, true);
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', function(e) {
+            if (e.reason && (
+                (e.reason.message && (
+                    e.reason.message.includes('translations') ||
+                    e.reason.message.includes('runtime.lastError') ||
+                    e.reason.message.includes('Receiving end does not exist')
+                )) ||
+                (typeof e.reason === 'string' && (
+                    e.reason.includes('translations') ||
+                    e.reason.includes('runtime.lastError')
+                ))
+            )) {
+                e.preventDefault();
+                console.warn('Suppressed browser extension promise rejection:', e.reason);
+                return true;
+            }
+        });
+
+        // Load unread notifications count
+        @if (User.Identity?.IsAuthenticated ?? false)
+        {
+            <text>
+            $(document).ready(function() {
+                loadNotificationCount();
+                setInterval(loadNotificationCount, 30000); // Check every 30 seconds
+            });
+
+            function loadNotificationCount() {
+                $.get('/Notifications/UnreadCount', function(data) {
+                    if (data && data.count > 0) {
+                        $('#notificationBadge').text(data.count).show();
+                    } else {
+                        $('#notificationBadge').hide();
+                    }
+                }).fail(function() {
+                    // Silently fail if notifications endpoint is not available
+                    $('#notificationBadge').hide();
+                });
+            }
+            </text>
+        }
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

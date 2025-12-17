@@ -1,0 +1,120 @@
+@model dynamic
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["EventHistory"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-history"></i> @Localizer["EventHistory"]</h1>
+            <p class="text-muted">@Localizer["EventHistoryDescription"]</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-primary">@(Model?.TotalEvents ?? 0)</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-calendar"></i> @Localizer["TotalEvents"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-success">@Model.CompletedEvents</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-check-circle"></i> @Localizer["Completed"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-warning">@Model.UpcomingEvents</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-calendar-day"></i> @Localizer["UpcomingTab"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-info">@Model.TotalVolunteerHours</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-hourglass-end"></i> @Localizer["VolunteerHours"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs mb-3" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#all">@Localizer["AllTab"]</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#completed">@Localizer["Completed"]</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#upcoming">@Localizer["UpcomingTab"]</a>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="all">
+                    @{
+                        var allEventsList = Model.AllEvents as List<UniversityEventsManagement.Models.Registration>;
+                    }
+                    @if (allEventsList != null && allEventsList.Any())
+                    {
+                        @await Html.PartialAsync("_EventHistoryList", allEventsList)
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> @Localizer["NoEventsInCategory"]
+                        </div>
+                    }
+                </div>
+                <div class="tab-pane fade" id="completed">
+                    @{
+                        var completedList = Model.CompletedEventsList as List<UniversityEventsManagement.Models.Registration>;
+                    }
+                    @if (completedList != null && completedList.Any())
+                    {
+                        @await Html.PartialAsync("_EventHistoryList", completedList)
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> @Localizer["NoCompletedEvents"]
+                        </div>
+                    }
+                </div>
+                <div class="tab-pane fade" id="upcoming">
+                    @{
+                        var upcomingList = Model.UpcomingEventsList as List<UniversityEventsManagement.Models.Registration>;
+                    }
+                    @if (upcomingList != null && upcomingList.Any())
+                    {
+                        @await Html.PartialAsync("_EventHistoryList", upcomingList)
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> @Localizer["NoUpcomingEvents"]
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

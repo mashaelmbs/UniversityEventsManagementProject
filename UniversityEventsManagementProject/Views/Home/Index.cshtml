@@ -1,0 +1,385 @@
+@model dynamic
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Home"].Value + " - " + Localizer["UniversityEventsManagement"].Value;
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+@section Styles {
+    <style>
+        .hero-banner {
+            position: relative;
+            background: linear-gradient(120deg, #6F4E37 0%, #A67C52 60%, #8B6F47 100%);
+            border-radius: 28px;
+            padding: 60px;
+            overflow: hidden;
+            min-height: 280px;
+        }
+
+        .hero-banner::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top left, rgba(255, 255, 255, 0.35), transparent 55%);
+            opacity: .8;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            color: #fff;
+            max-width: 760px;
+        }
+
+        .hero-title {
+            font-family: 'Cairo', sans-serif;
+            font-size: clamp(2rem, 4vw, 3.3rem);
+            font-weight: 800;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            letter-spacing: .5px;
+            text-shadow: 0 8px 18px rgba(15, 14, 36, 0.35);
+        }
+
+        .hero-subtitle {
+            font-size: 1.15rem;
+            line-height: 2;
+            color: rgba(255, 255, 255, 0.92);
+            margin-bottom: 25px;
+            text-shadow: 0 6px 12px rgba(12, 10, 35, 0.3);
+        }
+
+        .hero-actions .btn {
+            min-width: 180px;
+            font-size: 1rem;
+            padding: 12px 28px;
+            border-radius: 999px;
+        }
+
+        .hero-search {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 999px;
+            padding: 12px 16px;
+            display: flex;
+            gap: 12px;
+            backdrop-filter: blur(8px);
+            align-items: center;
+        }
+
+        .hero-search input {
+            border: none;
+            background: transparent;
+            color: #fff;
+            flex: 1;
+            font-size: 1rem;
+        }
+
+        .hero-search input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .hero-search button {
+            border-radius: 999px;
+            padding-inline: 24px;
+        }
+
+        /* Section Title Styling */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #EFE6DD;
+        }
+
+        .section-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #6F4E37;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header h2 i {
+            color: #A67C52;
+        }
+
+        /* Event Cards */
+        .event-card {
+            border: none;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .event-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .event-card .card-img-top {
+            height: 180px;
+            object-fit: cover;
+        }
+
+        .event-card .card-body {
+            padding: 20px;
+        }
+
+        .event-card .card-title {
+            font-weight: 700;
+            color: #4B3621;
+            margin-bottom: 10px;
+        }
+
+        .event-card .card-footer {
+            border-top: 1px solid #f0f0f0;
+            padding: 15px 20px;
+        }
+
+        /* Stats Cards */
+        .stat-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        /* No Events Alert */
+        .no-events-alert {
+            background: linear-gradient(135deg, #f8f4f0, #EFE6DD);
+            border: 2px dashed #A67C52;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .no-events-alert i {
+            font-size: 48px;
+            color: #A67C52;
+            margin-bottom: 15px;
+        }
+
+        .no-events-alert p {
+            color: #6F4E37;
+            font-size: 18px;
+            margin: 0;
+        }
+
+        @@media (max-width: 768px) {
+            .hero-banner {
+                padding: 35px 24px;
+            }
+
+            .hero-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+}
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="hero-banner">
+                <div class="hero-content">
+                    <h1 class="hero-title">
+                        <i class="fas fa-calendar-alt"></i> @Localizer["PlatformTitle"]
+                    </h1>
+                    <p class="hero-subtitle">
+                        @Localizer["PlatformSubtitle"]
+                    </p>
+                    <div class="hero-actions d-flex gap-2 flex-wrap">
+                        <a href="/Events" class="btn btn-light btn-lg">
+                            <i class="fas fa-search"></i> @Localizer["ExploreEvents"]
+                        </a>
+                        @if (!User.Identity?.IsAuthenticated ?? true)
+                        {
+                            <a href="/Account/Register" class="btn btn-outline-light btn-lg">
+                                <i class="fas fa-user-plus"></i> @Localizer["CreateAccount"]
+                            </a>
+                        }
+                    </div>
+                    <form class="hero-search mt-4" method="get" action="/Events">
+                        <i class="fas fa-search text-white"></i>
+                        <input type="text" name="searchString" placeholder="@Localizer["SearchPlaceholder"]">
+                        <button type="submit" class="btn btn-primary">
+                            @Localizer["ExploreEvents"]
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Section -->
+    <div class="row mb-5">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card text-center">
+                <div class="card-body py-4">
+                    <h3 class="text-primary">@Model.TotalEvents</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-calendar"></i> @Localizer["TotalEvents"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card text-center">
+                <div class="card-body py-4">
+                    <h3 class="text-success">@Model.TotalUsers</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-users"></i> @Localizer["TotalUsers"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card text-center">
+                <div class="card-body py-4">
+                    <h3 class="text-info">@Model.TotalRegistrations</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-check-circle"></i> @Localizer["TotalRegistrations"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card text-center">
+                <div class="card-body py-4">
+                    <h3 class="text-warning">@(Model.TotalRegistrations > 0 ? (Model.TotalRegistrations / 10) : 0)</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-trophy"></i> @Localizer["Achievements"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Events Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="section-header">
+                <h2><i class="fas fa-calendar-alt"></i> @Localizer["FeaturedEvents"]</h2>
+                <a href="/Events" class="btn btn-outline-primary">
+                    <i class="fas fa-th-large"></i> @Localizer["ViewAllEvents"]
+                </a>
+            </div>
+
+            @if (Model.UpcomingEvents != null && Model.UpcomingEvents.Count > 0)
+            {
+                <div class="row">
+                    @foreach (var evt in Model.UpcomingEvents)
+                    {
+                        <div class="col-md-6 col-lg-4 mb-4">
+                            <div class="card event-card h-100">
+                                @{
+                                    var images = new[] { 
+                                        "/images/fabian-irsara-67l-QujB14w-unsplash.jpg",
+                                        "/images/nordwood-themes-kRNZiGKtz48-unsplash (1).jpg",
+                                        "/images/nubelson-fernandes-ArC1GDY7bqQ-unsplash.jpg",
+                                        "/images/om-kamath-eL_FERodaT4-unsplash.jpg",
+                                        "/images/omid-armin-pnxMDGBj6Jw-unsplash.jpg"
+                                    };
+                                    var imageUrl = images[evt.EventID % images.Length];
+                                }
+                                @if (!string.IsNullOrEmpty(evt.ImageUrl))
+                                {
+                                    <img src="@evt.ImageUrl" class="card-img-top" alt="@evt.Title">
+                                }
+                                else
+                                {
+                                    <img src="@imageUrl" class="card-img-top" alt="@evt.Title">
+                                }
+                                <div class="card-body">
+                                    <h5 class="card-title">@evt.Title</h5>
+                                    <p class="card-text text-muted small">@Html.Raw(evt.Description.Length > 80 ? evt.Description.Substring(0, 80) + "..." : evt.Description)</p>
+                                    
+                                    <div class="mb-3">
+                                        <small class="text-muted d-block mb-1">
+                                            <i class="fas fa-calendar text-primary"></i> @evt.EventDate.ToString("dd/MM/yyyy")
+                                        </small>
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-map-marker-alt text-danger"></i> @evt.Venue
+                                        </small>
+                                    </div>
+
+                                    <div>
+                                        <span class="badge bg-info">@evt.EventType</span>
+                                        <span class="badge bg-success">@evt.VolunteerHours @Localizer["VolunteerHours"]</span>
+                                    </div>
+                                </div>
+                                <div class="card-footer bg-white">
+                                    <a href="/Events/Details/@evt.EventID" class="btn btn-primary btn-sm w-100">
+                                        <i class="fas fa-eye"></i> @Localizer["Details"]
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4 text-center"><i class="fas fa-lightbulb"></i> @Localizer["KeyFeatures"]</h2>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-calendar-check fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">@Localizer["EasyRegistration"]</h5>
+                    <p class="card-text">@Localizer["EasyRegistrationText"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-certificate fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">@Localizer["DigitalCertificates"]</h5>
+                    <p class="card-text">@Localizer["DigitalCertificatesText"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-bell fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">@Localizer["InstantNotifications"]</h5>
+                    <p class="card-text">@Localizer["InstantNotificationsText"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    @if (!User.Identity?.IsAuthenticated ?? true)
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="bg-light p-5 rounded-lg text-center">
+                    <h3 class="mb-3">@Localizer["NewToPlatform"]</h3>
+                    <p class="lead mb-4">@Localizer["JoinThousands"]</p>
+                    <a href="/Account/Register" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> @Localizer["RegisterNow"]
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

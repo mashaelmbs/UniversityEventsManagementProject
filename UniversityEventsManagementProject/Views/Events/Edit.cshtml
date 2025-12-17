@@ -1,0 +1,187 @@
+@model UniversityEventsManagement.Models.Event
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["EditEvent"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-edit"></i> @Localizer["EditEvent"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" asp-action="Edit" enctype="multipart/form-data">
+                        <input type="hidden" asp-for="EventID" />
+                        <input type="hidden" asp-for="ImageUrl" />
+                        <input type="hidden" asp-for="CreatedByUserID" />
+                        <input type="hidden" asp-for="CreatedDate" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">@Localizer["EventName"]</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-heading"></i></span>
+                                <input asp-for="Title" class="form-control" placeholder="@Localizer["EnterEventName"]" required>
+                            </div>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">@Localizer["Description"]</label>
+                            <div class="input-group">
+                                <span class="input-group-text align-items-start pt-3"><i class="fas fa-align-left"></i></span>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="@Localizer["EnterEventDescription"]" required></textarea>
+                            </div>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EventDate" class="form-label">@Localizer["DateAndTime"]</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    <input asp-for="EventDate" type="datetime-local" class="form-control" required>
+                                </div>
+                                <span asp-validation-for="EventDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Venue" class="form-label">@Localizer["Location"]</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    <input asp-for="Venue" class="form-control" placeholder="@Localizer["EnterEventLocation"]" required>
+                                </div>
+                                <span asp-validation-for="Venue" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MaxCapacity" class="form-label">@Localizer["MaximumCapacity"]</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                    <input asp-for="MaxCapacity" type="number" class="form-control" placeholder="@Localizer["NumberOfSeats"]" required>
+                                </div>
+                                <span asp-validation-for="MaxCapacity" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EventType" class="form-label">@Localizer["EventType"]</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-tag"></i></span>
+                                    <select asp-for="EventType" class="form-select" required>
+                                        <option value="">@Localizer["SelectType"]</option>
+                                        <option value="Workshop">@Localizer["Workshop"]</option>
+                                        <option value="Seminar">@Localizer["Seminar"]</option>
+                                        <option value="Social">@Localizer["Social"]</option>
+                                        <option value="Competition">@Localizer["Competition"]</option>
+                                        <option value="Other">@Localizer["Other"]</option>
+                                    </select>
+                                </div>
+                                <span asp-validation-for="EventType" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="VolunteerHours" class="form-label">@Localizer["VolunteerHours"]</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <input asp-for="VolunteerHours" type="number" class="form-control" placeholder="@Localizer["NumberOfHours"]" required>
+                                </div>
+                                <span asp-validation-for="VolunteerHours" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="eventImage" class="form-label">@Localizer["EventImage"]</label>
+                            @if (Model != null && !string.IsNullOrEmpty(Model.ImageUrl))
+                            {
+                                <div class="mb-2">
+                                    <label class="form-label text-muted">@Localizer["CurrentImage"]</label>
+                                    <div>
+                                        <img src="@Model.ImageUrl" alt="@Localizer["EventImage"]" class="img-thumbnail" style="max-width: 300px; max-height: 300px;" onerror="this.style.display='none';">
+                                    </div>
+                                </div>
+                            }
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="fas fa-image"></i></span>
+                                <input type="file" class="form-control" id="eventImage" name="eventImage" accept="image/*" onchange="previewImage(this)">
+                            </div>
+                            <small class="form-text text-muted d-block mt-2">@Localizer["SupportedFormats"]: JPG, PNG, GIF, WebP (@Localizer["MaxSize"]: 5 MB)</small>
+                            <small class="form-text text-info d-block">@Localizer["LeaveEmptyToKeepCurrent"]</small>
+                            <div id="imagePreview" class="mt-3"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="isApproved" asp-for="IsApproved">
+                                <label class="form-check-label" for="isApproved">
+                                    @Localizer["IsApproved"]
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> @Localizer["SaveChanges"]
+                            </button>
+                            <a href="/Events" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> @Localizer["Cancel"]
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Validate file size (5 MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('@Localizer["FileTooLarge"]');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    alert('@Localizer["UnsupportedFileFormat"]');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '300px';
+                    img.style.maxHeight = '300px';
+                    img.className = 'img-thumbnail';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

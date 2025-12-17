@@ -1,0 +1,134 @@
+@model List<UniversityEventsManagement.Models.Event>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+@{
+    ViewData["Title"] = Localizer["ReportsTitle"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var totalRegistrations = (Model ?? Enumerable.Empty<UniversityEventsManagement.Models.Event>()).Sum(e => e.Registrations?.Count ?? 0);
+    var totalAttendance = (Model ?? Enumerable.Empty<UniversityEventsManagement.Models.Event>()).Sum(e => e.Attendances?.Count(a => a.IsPresent) ?? 0);
+    var totalFeedback = (Model ?? Enumerable.Empty<UniversityEventsManagement.Models.Event>()).Sum(e => e.Feedbacks?.Count ?? 0);
+    var avgRating = totalFeedback > 0 && (Model ?? Enumerable.Empty<UniversityEventsManagement.Models.Event>()).Any(e => e.Feedbacks?.Any() ?? false)
+        ? Math.Round((Model ?? Enumerable.Empty<UniversityEventsManagement.Models.Event>()).Where(e => e.Feedbacks?.Any() ?? false)
+            .Average(e => e.Feedbacks!.Average(f => f.Rating)), 2)
+        : 0;
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-chart-line"></i> @Localizer["ReportsTitle"]</h1>
+            <p class="text-muted">@Localizer["ReportsDescription"]</p>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-primary">@Model.Count</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-calendar"></i> @Localizer["TotalEventsCount"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-success">@totalRegistrations</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-user-check"></i> @Localizer["RegistrationsCount"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-info">@totalAttendance</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-users"></i> @Localizer["AttendanceCount"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-warning">@avgRating</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-star"></i> @Localizer["AverageRatingLabel"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> @Localizer["NoDataAvailable"]
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>@Localizer["EventName"]</th>
+                                <th>@Localizer["DateCol"]</th>
+                                <th>@Localizer["RegistrationsCount"]</th>
+                                <th>@Localizer["AttendanceCount"]</th>
+                                <th>@Localizer["AttendanceRate"]</th>
+                                <th>@Localizer["RatingsLabel"]</th>
+                                <th>@Localizer["CertificatesCount"]</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var evt in Model.OrderByDescending(e => e.EventDate))
+                            {
+                                var totalReg = evt.Registrations?.Count ?? 0;
+                                var attendance = evt.Attendances?.Count(a => a.IsPresent) ?? 0;
+                                var attendanceRate = totalReg > 0 ? Math.Round((double)attendance / totalReg * 100, 1) : 0;
+                                var feedbackCount = evt.Feedbacks?.Count ?? 0;
+                                var rating = feedbackCount > 0
+                                    ? Math.Round(evt.Feedbacks!.Average(f => f.Rating), 1)
+                                    : 0;
+                                var certificatesCount = evt.Certificates?.Count ?? 0;
+                                <tr>
+                                    <td>
+                                        <strong>@evt.Title</strong>
+                                        <div class="text-muted small">@evt.EventType</div>
+                                    </td>
+                                    <td>@evt.EventDate.ToString("dd/MM/yyyy")</td>
+                                    <td>
+                                        <i class="fas fa-user-plus text-primary"></i>
+                                        @totalReg
+                                        <div class="text-muted small">@evt.MaxCapacity @Localizer["Capacity"]</div>
+                                    </td>
+                                    <td>@attendance</td>
+                                    <td>
+                                        <span class="badge bg-@(attendanceRate >= 75 ? "success" : attendanceRate >= 50 ? "warning" : "secondary")">
+                                            @attendanceRate @Localizer["AttendancePercent"]
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (feedbackCount == 0)
+                                        {
+                                            <span class="text-muted">@Localizer["NoRatingsAvailable"]</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-warning">
+                                                <i class="fas fa-star"></i> @rating
+                                            </span>
+                                            <div class="text-muted small">(@feedbackCount @Localizer["RatingSingle"])</div>
+                                        }
+                                    </td>
+                                    <td>@certificatesCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

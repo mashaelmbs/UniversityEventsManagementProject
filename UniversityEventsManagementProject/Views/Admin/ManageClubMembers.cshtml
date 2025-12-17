@@ -1,0 +1,222 @@
+@model UniversityEventsManagement.ViewModels.ManageClubMembersViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = "إدارة طلبات الانضمام للأندية";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .request-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        border-right: 4px solid #6F4E37;
+    }
+
+    .request-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .club-badge {
+        background: #EFE6DD;
+        color: #6F4E37;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .btn-reject {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+    }
+
+    .stats-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .stats-number {
+        font-size: 32px;
+        font-weight: bold;
+        color: #6F4E37;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-users-cog"></i> إدارة طلبات الانضمام للأندية</h1>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">@(Model?.PendingMembers?.Count ?? 0)</div>
+                <div class="text-muted">طلبات في انتظار الموافقة</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card">
+                <div class="stats-number">@(Model?.Clubs?.Count ?? 0)</div>
+                <div class="text-muted">أندية لديها طلبات</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests -->
+    @if (Model?.PendingMembers != null && Model.PendingMembers.Count > 0)
+    {
+        <h3 class="mb-3"><i class="fas fa-clock"></i> طلبات في انتظار الموافقة</h3>
+        
+        @foreach (var member in Model.PendingMembers)
+        {
+            <div class="request-card">
+                <div class="request-header">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            @if (!string.IsNullOrEmpty(member.User?.FirstName))
+                            {
+                                @member.User.FirstName[0]
+                            }
+                            else
+                            {
+                                <i class="fas fa-user"></i>
+                            }
+                        </div>
+                        <div>
+                            <h5 class="mb-1">@member.User?.FirstName @member.User?.LastName</h5>
+                            <small class="text-muted">
+                                <i class="fas fa-envelope"></i> @member.User?.Email
+                                @if (!string.IsNullOrEmpty(member.User?.UniversityID))
+                                {
+                                    <span class="ms-2">
+                                        <i class="fas fa-id-card"></i> @member.User.UniversityID
+                                    </span>
+                                }
+                            </small>
+                        </div>
+                    </div>
+                    <div class="club-badge">
+                        <i class="fas fa-users"></i> @member.Club?.ClubName
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar"></i> تاريخ الطلب: @member.JoinDate.ToString("dd MMMM yyyy HH:mm")
+                    </small>
+                </div>
+
+                <div class="action-buttons">
+                    <form asp-action="ApproveClubMember" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="memberId" value="@member.ClubMemberID" />
+                        <button type="submit" class="btn btn-approve">
+                            <i class="fas fa-check"></i> قبول
+                        </button>
+                    </form>
+                    <form asp-action="RejectClubMember" method="post" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="memberId" value="@member.ClubMemberID" />
+                        <button type="submit" class="btn btn-reject" onclick="return confirm('هل أنت متأكد من رفض هذا الطلب؟');">
+                            <i class="fas fa-times"></i> رفض
+                        </button>
+                    </form>
+                    <a href="/Admin/ViewClubMembers?clubId=@member.ClubID" class="btn btn-outline-primary">
+                        <i class="fas fa-eye"></i> عرض جميع طلبات النادي
+                    </a>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> لا توجد طلبات في انتظار الموافقة
+        </div>
+    }
+
+    <!-- Clubs with Requests -->
+    @if (Model?.Clubs != null && Model.Clubs.Count > 0)
+    {
+        <h3 class="mb-3 mt-5"><i class="fas fa-list"></i> الأندية التي لديها طلبات</h3>
+        <div class="row">
+            @foreach (var club in Model.Clubs)
+            {
+                var pendingCount = club.Members?.Count(m => m.Status == "Pending") ?? 0;
+                <div class="col-md-4 mb-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">@club.ClubName</h5>
+                            <p class="card-text">
+                                <span class="badge bg-warning">@pendingCount طلب في الانتظار</span>
+                            </p>
+                            <a href="/Admin/ViewClubMembers?clubId=@club.ClubID" class="btn btn-primary btn-sm">
+                                <i class="fas fa-eye"></i> عرض الطلبات
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+

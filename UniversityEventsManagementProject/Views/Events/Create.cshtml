@@ -1,0 +1,169 @@
+@model UniversityEventsManagement.Models.Event
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["CreateNewEvent"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-plus"></i> @Localizer["CreateNewEvent"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" asp-action="Create" enctype="multipart/form-data">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">@Localizer["EventName"]</label>
+                            <input asp-for="Title" class="form-control" placeholder="@Localizer["EventName"]" required>
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">@Localizer["Description"]</label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="@Localizer["Description"]" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EventDate" class="form-label">@Localizer["DateAndTime"]</label>
+                                <input asp-for="EventDate" type="datetime-local" class="form-control" required>
+                                <span asp-validation-for="EventDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Venue" class="form-label">@Localizer["Location"]</label>
+                                <input asp-for="Venue" class="form-control" placeholder="@Localizer["Location"]" required>
+                                <span asp-validation-for="Venue" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="MaxCapacity" class="form-label">@Localizer["MaximumCapacity"]</label>
+                                <input asp-for="MaxCapacity" type="number" class="form-control" placeholder="@Localizer["MaximumCapacity"]" required>
+                                <span asp-validation-for="MaxCapacity" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="EventType" class="form-label">@Localizer["EventType"]</label>
+                                <select asp-for="EventType" class="form-select" required>
+                                    <option value="">اختر النوع</option>
+                                    <option value="Workshop">ورشة عمل</option>
+                                    <option value="Seminar">ندوة</option>
+                                    <option value="Social">اجتماعي</option>
+                                    <option value="Competition">مسابقة</option>
+                                    <option value="Other">أخرى</option>
+                                </select>
+                                <span asp-validation-for="EventType" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="VolunteerHours" class="form-label">@Localizer["VolunteerHours"]</label>
+                                <input asp-for="VolunteerHours" type="number" class="form-control" placeholder="@Localizer["VolunteerHours"]" required>
+                                <span asp-validation-for="VolunteerHours" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="eventImage" class="form-label">صورة الفعالية</label>
+                            <div class="input-group">
+                                <input type="file" class="form-control" id="eventImage" name="eventImage" accept="image/*" onchange="previewImage(this)">
+                                <small class="form-text text-muted d-block mt-2">الصيغ المدعومة: JPG, PNG, GIF, WebP (الحد الأقصى: 5 MB)</small>
+                            </div>
+                            <div id="imagePreview" class="mt-3"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save"></i> @Localizer["CreateEvent"]
+                            </button>
+                            <a href="/Events" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> @Localizer["Cancel"]
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> نصائح</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <strong>اسم واضح:</strong> استخدم اسماً وصفياً وجذاباً
+                        </li>
+                        <li class="mb-2">
+                            <strong>وصف مفصل:</strong> اشرح أهداف الفعالية والفوائد
+                        </li>
+                        <li class="mb-2">
+                            <strong>التاريخ المناسب:</strong> تأكد من عدم التعارض مع فعاليات أخرى
+                        </li>
+                        <li class="mb-2">
+                            <strong>السعة الواقعية:</strong> حدد عدد المقاعد بناءً على المكان
+                        </li>
+                        <li class="mb-2">
+                            <strong>ساعات التطوع:</strong> حدد عدد الساعات بناءً على مدة الفعالية
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        function previewImage(input) {
+            const preview = document.getElementById('imagePreview');
+            preview.innerHTML = '';
+
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+
+                // Validate file size (5 MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('حجم الملف كبير جداً. الحد الأقصى: 5 MB');
+                    input.value = '';
+                    return;
+                }
+
+                // Validate file type
+                const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!validTypes.includes(file.type)) {
+                    alert('صيغة الملف غير مدعومة. الصيغ المدعومة: JPG, PNG, GIF, WebP');
+                    input.value = '';
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.maxWidth = '300px';
+                    img.style.maxHeight = '300px';
+                    img.className = 'img-thumbnail';
+                    preview.appendChild(img);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+    </script>
+}

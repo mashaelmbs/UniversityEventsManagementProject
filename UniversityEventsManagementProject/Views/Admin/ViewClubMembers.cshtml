@@ -1,0 +1,181 @@
+@model UniversityEventsManagement.ViewModels.ViewClubMembersViewModel
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = "إدارة أعضاء النادي";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .member-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .member-card {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .member-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .member-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/Admin/ManageClubMembers" class="btn btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-right"></i> العودة إلى إدارة الطلبات
+            </a>
+            <h1><i class="fas fa-users"></i> إدارة أعضاء النادي: @Model?.Club?.ClubName</h1>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Pending Members -->
+    @if (Model?.PendingMembers != null && Model.PendingMembers.Count > 0)
+    {
+        <div class="member-section">
+            <h3 class="mb-3"><i class="fas fa-clock text-warning"></i> طلبات في انتظار الموافقة (@Model.PendingMembers.Count)</h3>
+            @foreach (var member in Model.PendingMembers)
+            {
+                <div class="member-card">
+                    <div class="member-info">
+                        <div class="member-avatar">
+                            @if (!string.IsNullOrEmpty(member.User?.FirstName))
+                            {
+                                @member.User.FirstName[0]
+                            }
+                            else
+                            {
+                                <i class="fas fa-user"></i>
+                            }
+                        </div>
+                        <div>
+                            <strong>@member.User?.FirstName @member.User?.LastName</strong><br />
+                            <small class="text-muted">@member.User?.Email</small>
+                        </div>
+                    </div>
+                    <div>
+                        <form asp-action="ApproveClubMember" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="memberId" value="@member.ClubMemberID" />
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="fas fa-check"></i> قبول
+                            </button>
+                        </form>
+                        <form asp-action="RejectClubMember" method="post" style="display: inline;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="memberId" value="@member.ClubMemberID" />
+                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('هل أنت متأكد من رفض هذا الطلب؟');">
+                                <i class="fas fa-times"></i> رفض
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Approved Members -->
+    @if (Model?.ApprovedMembers != null && Model.ApprovedMembers.Count > 0)
+    {
+        <div class="member-section">
+            <h3 class="mb-3"><i class="fas fa-check-circle text-success"></i> الأعضاء المعتمدون (@Model.ApprovedMembers.Count)</h3>
+            @foreach (var member in Model.ApprovedMembers)
+            {
+                <div class="member-card">
+                    <div class="member-info">
+                        <div class="member-avatar">
+                            @if (!string.IsNullOrEmpty(member.User?.FirstName))
+                            {
+                                @member.User.FirstName[0]
+                            }
+                            else
+                            {
+                                <i class="fas fa-user"></i>
+                            }
+                        </div>
+                        <div>
+                            <strong>@member.User?.FirstName @member.User?.LastName</strong><br />
+                            <small class="text-muted">@member.User?.Email</small><br />
+                            <small class="text-muted">انضم في: @member.JoinDate.ToString("dd/MM/yyyy")</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-success">معتمد</span>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Rejected Members -->
+    @if (Model?.RejectedMembers != null && Model.RejectedMembers.Count > 0)
+    {
+        <div class="member-section">
+            <h3 class="mb-3"><i class="fas fa-times-circle text-danger"></i> الطلبات المرفوضة (@Model.RejectedMembers.Count)</h3>
+            @foreach (var member in Model.RejectedMembers)
+            {
+                <div class="member-card">
+                    <div class="member-info">
+                        <div class="member-avatar">
+                            @if (!string.IsNullOrEmpty(member.User?.FirstName))
+                            {
+                                @member.User.FirstName[0]
+                            }
+                            else
+                            {
+                                <i class="fas fa-user"></i>
+                            }
+                        </div>
+                        <div>
+                            <strong>@member.User?.FirstName @member.User?.LastName</strong><br />
+                            <small class="text-muted">@member.User?.Email</small>
+                        </div>
+                    </div>
+                    <span class="badge bg-danger">مرفوض</span>
+                </div>
+            }
+        </div>
+    }
+
+    @if ((Model?.PendingMembers == null || Model.PendingMembers.Count == 0) && 
+         (Model?.ApprovedMembers == null || Model.ApprovedMembers.Count == 0) && 
+         (Model?.RejectedMembers == null || Model.RejectedMembers.Count == 0))
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> لا توجد طلبات أو أعضاء في هذا النادي
+        </div>
+    }
+</div>
+

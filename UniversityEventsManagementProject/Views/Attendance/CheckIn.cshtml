@@ -1,0 +1,101 @@
+@model UniversityEventsManagement.Models.Event
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["CheckInAttendance"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-qrcode"></i> @Localizer["CheckInAttendance"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        @Localizer["ScanQROrPressButton"]
+                    </div>
+
+                    <div class="mb-4 p-4 bg-light rounded text-center">
+                        <h3>@(Model?.Title ?? "")</h3>
+                        <p class="text-muted">
+                            <i class="fas fa-calendar"></i> @Model.EventDate.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                        <p class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i> @Model.Venue
+                        </p>
+                    </div>
+
+                    <form method="post" asp-action="RecordAttendance">
+                        <input type="hidden" name="eventId" value="@Model.EventID">
+                        
+                        <div class="mb-4">
+                            <button type="submit" class="btn btn-success btn-lg w-100">
+                                <i class="fas fa-check-circle"></i> @Localizer["CheckInAttendance"]
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>@Localizer["YouWillReceiveHours", @Model.VolunteerHours]</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-info-circle"></i> @Localizer["EventInformation"]</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>@Localizer["Type"]:</strong> @Model.EventType</p>
+                    <p><strong>@Localizer["Location"]:</strong> @Model.Venue</p>
+                    <p><strong>@Localizer["Date"]:</strong> @Model.EventDate.ToString("dddd, dd MMMM yyyy")</p>
+                    <p><strong>@Localizer["Time"]:</strong> @Model.EventDate.ToString("HH:mm")</p>
+                    <p><strong>@Localizer["VolunteerHours"]:</strong> @Model.VolunteerHours</p>
+                    <p><strong>@Localizer["Capacity"]:</strong> @(Model?.Registrations?.Count ?? 0) / @(Model?.MaxCapacity ?? 0)</p>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="fas fa-qrcode"></i> QR Code</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div id="qr-code" style="display:flex; justify-content:center; align-items:center; height:200px; background:#f0f0f0; border-radius:8px;">
+                        <p class="text-muted">@Localizer["QRCodeWillAppear"]</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+    // Generate QR Code for the event
+    document.addEventListener('DOMContentLoaded', function() {
+        var qrContainer = document.getElementById('qr-code');
+        qrContainer.innerHTML = '';
+        new QRCode(qrContainer, {
+            text: "Event-@Model.EventID",
+            width: 200,
+            height: 200,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+    });
+</script>

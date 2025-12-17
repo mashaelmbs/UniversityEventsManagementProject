@@ -1,0 +1,88 @@
+@model List<UniversityEventsManagement.Models.Notification>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Notifications"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-bell"></i> @Localizer["Notifications"]</h1>
+        </div>
+        <div class="col-md-4">
+            @if (Model != null && Model.Any(n => !n.IsRead))
+            {
+                <form method="post" asp-action="MarkAllAsRead" asp-controller="Notifications" style="display:inline;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-primary float-end">
+                        <i class="fas fa-check-double"></i> @Localizer["MarkAllAsRead"]
+                    </button>
+                </form>
+            }
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> @Localizer["NoNotifications"]
+        </div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var notif in Model)
+            {
+                <div class="list-group-item @(notif.IsRead ? "" : "bg-light border-start border-4 border-primary")">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                @if (!notif.IsRead)
+                                {
+                                    <span class="badge bg-primary me-2">@Localizer["New"]</span>
+                                }
+                                @notif.Message
+                            </h6>
+                            <p class="mb-1 text-muted">
+                                <small>
+                                    <i class="fas fa-clock"></i> @notif.SentDate.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                            </p>
+                            @if (notif.EventID.HasValue)
+                            {
+                                <a href="/Events/Details/@notif.EventID" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> @Localizer["ViewEvent"]
+                                </a>
+                            }
+                        </div>
+                        <div>
+                            @if (!notif.IsRead)
+                            {
+                                <form method="post" asp-action="MarkAsRead" asp-controller="Notifications" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="notificationId" value="@notif.NotificationID">
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary" title="@Localizer["MarkAsRead"]">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                            }
+                            <form method="post" asp-action="Delete" asp-controller="Notifications" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="notificationId" value="@notif.NotificationID">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" title="@Localizer["Delete"]" onclick="return confirm('@Localizer["ConfirmDeleteNotification"]')">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

@@ -1,0 +1,87 @@
+@model UniversityEventsManagement.Models.Club
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = "إنشاء نادي جديد";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/Clubs" class="btn btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-right"></i> العودة إلى قائمة الأندية
+            </a>
+            <h1 class="mb-2"><i class="fas fa-plus-circle"></i> إنشاء نادي جديد</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">بيانات النادي</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="ClubName" class="form-label">اسم النادي <span class="text-danger">*</span></label>
+                            <input asp-for="ClubName" class="form-control" placeholder="أدخل اسم النادي" required />
+                            <span asp-validation-for="ClubName" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">الوصف <span class="text-danger">*</span></label>
+                            <textarea asp-for="Description" class="form-control" rows="5" placeholder="أدخل وصف النادي وأهدافه" required></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="LogoUrl" class="form-label">رابط الشعار (اختياري)</label>
+                            <input asp-for="LogoUrl" class="form-control" type="url" placeholder="https://example.com/logo.png" />
+                            <small class="form-text text-muted">يمكنك إدخال رابط صورة الشعار</small>
+                            <span asp-validation-for="LogoUrl" class="text-danger"></span>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> إنشاء النادي
+                            </button>
+                            <a href="/Clubs" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> معلومات</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">
+                        <i class="fas fa-lightbulb"></i> <strong>نصيحة:</strong>
+                    </p>
+                    <ul class="text-muted small">
+                        <li>اختر اسماً واضحاً ومميزاً للنادي</li>
+                        <li>اكتب وصفاً شاملاً يوضح أهداف النادي وأنشطته</li>
+                        <li>يمكنك إضافة رابط شعار النادي لاحقاً</li>
+                        <li>سيتم تفعيل النادي تلقائياً بعد الإنشاء</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

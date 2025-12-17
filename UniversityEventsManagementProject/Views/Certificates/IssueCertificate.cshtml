@@ -1,0 +1,66 @@
+@model List<UniversityEventsManagement.Models.Event>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+@inject UniversityEventsManagement.Data.ApplicationDbContext DbContext
+
+@{
+    ViewData["Title"] = Localizer["IssueCertificates"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-certificate"></i> إصدار شهادات جديدة</h1>
+            <p class="text-muted">اختر الفعالية لإصدار الشهادات للطلاب الحاضرين</p>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> لا توجد فعاليات منتهية لإصدار الشهادات لها.
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var evt in Model)
+            {
+                var attendanceCount = evt.Attendances?.Count(a => a.IsPresent) ?? 0;
+                var certificatesCount = DbContext?.Certificates?.Count(c => c.EventID == evt.EventID) ?? 0;
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">
+                                <i class="fas fa-calendar-alt text-primary"></i> @evt.Title
+                            </h5>
+                            <p class="card-text text-muted small">
+                                <i class="fas fa-map-marker-alt"></i> @evt.Venue
+                            </p>
+                            <p class="card-text text-muted small">
+                                <i class="fas fa-clock"></i> @evt.EventDate.ToString("dd/MM/yyyy")
+                            </p>
+                            <div class="mb-3">
+                                <span class="badge bg-success">@attendanceCount حاضر</span>
+                                <span class="badge bg-info">@certificatesCount شهادة صادرة</span>
+                            </div>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="fas fa-hourglass-end"></i> @evt.VolunteerHours ساعة تطوع
+                                </small>
+                            </p>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <a href="/Certificates/IssueCertificateForEvent/@evt.EventID" class="btn btn-primary w-100">
+                                <i class="fas fa-certificate"></i> إصدار الشهادات
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+

@@ -1,0 +1,127 @@
+@model List<UniversityEventsManagement.Models.Event>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["EventsPageTitle"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-calendar-alt"></i> @Localizer["UpcomingEvents"]</h1>
+        </div>
+        <div class="col-md-4">
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="/Events/Create" class="btn btn-primary float-end">
+                    <i class="fas fa-plus"></i> @Localizer["CreateNewEvent"]
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <form method="get" id="filterForm" class="row g-3">
+            <div class="col-md-5">
+                <input type="text" name="searchString" class="form-control" placeholder="@Localizer["SearchEventPlaceholder"]" value="@ViewBag.SearchString">
+            </div>
+            <div class="col-md-4">
+                <select name="filterType" id="filterTypeSelect" class="form-select" onchange="document.getElementById('filterForm').submit();">
+                    <option value="">@Localizer["AllEventTypes"]</option>
+                    <option value="Workshop">@Localizer["Workshop"]</option>
+                    <option value="Seminar">@Localizer["Seminar"]</option>
+                    <option value="Social">@Localizer["Social"]</option>
+                    <option value="Competition">@Localizer["Competition"]</option>
+                    <option value="Other">@Localizer["Other"]</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-search"></i> @Localizer["Search"]
+                </button>
+            </div>
+        </form>
+    </div>
+
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> @Localizer["NoEventsAvailable"]
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var evt in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card event-card h-100">
+                        @{
+                            var images = new[] { 
+                                "/images/fabian-irsara-67l-QujB14w-unsplash.jpg",
+                                "/images/nordwood-themes-kRNZiGKtz48-unsplash (1).jpg",
+                                "/images/nubelson-fernandes-ArC1GDY7bqQ-unsplash.jpg",
+                                "/images/om-kamath-eL_FERodaT4-unsplash.jpg",
+                                "/images/omid-armin-pnxMDGBj6Jw-unsplash.jpg"
+                            };
+                            var imageUrl = images[evt.EventID % images.Length];
+                        }
+                        @if (!string.IsNullOrEmpty(evt.ImageUrl))
+                        {
+                            <img src="@evt.ImageUrl" class="card-img-top" alt="@evt.Title" style="height: 200px; object-fit: cover;">
+                        }
+                        else
+                        {
+                            <img src="@imageUrl" class="card-img-top" alt="@evt.Title" style="height: 200px; object-fit: cover;">
+                        }
+                        <div class="card-body">
+                            <h5 class="card-title">@evt.Title</h5>
+                            <p class="card-text text-muted">@Html.Raw(evt.Description.Length > 100 ? evt.Description.Substring(0, 100) + "..." : evt.Description)</p>
+                            
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> @evt.EventDate.ToString("dd/MM/yyyy HH:mm")
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt"></i> @evt.Venue
+                                </small>
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-users"></i> @(evt.Registrations?.Count ?? 0) / @evt.MaxCapacity
+                                </small>
+                            </div>
+
+                            <div class="mb-3">
+                                <span class="badge bg-info">@evt.EventType</span>
+                                <span class="badge bg-success">@evt.VolunteerHours @Localizer["VolunteerHoursText"]</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white">
+                            <a href="/Events/Details/@evt.EventID" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-eye"></i> @Localizer["ViewDetails"]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Set selected value for filter dropdown
+            var filterType = '@ViewBag.FilterType';
+            if (filterType) {
+                $('#filterTypeSelect').val(filterType);
+            }
+        });
+    </script>
+}

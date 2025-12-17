@@ -1,0 +1,120 @@
+@model List<UniversityEventsManagement.Models.Event>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["ManageEvents"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .action-buttons-group {
+        display: flex;
+        gap: 4px;
+    }
+    .action-buttons-group .btn {
+        padding: 4px 8px;
+        margin: 0;
+    }
+    .action-buttons-group .btn i {
+        font-size: 14px;
+    }
+</style>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1><i class="fas fa-list"></i> @Localizer["ManageEvents"]</h1>
+        </div>
+        <div class="col-md-4">
+            <a asp-action="Create" asp-controller="Events" class="btn btn-primary float-end">
+                <i class="fas fa-plus"></i> @Localizer["CreateNewEvent"]
+            </a>
+        </div>
+    </div>
+
+    @if (Model == null || Model.Count == 0)
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> @Localizer["NoEventsAvailable"]
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Localizer["EventName"]</th>
+                        <th>@Localizer["DateCol"]</th>
+                        <th>@Localizer["Location"]</th>
+                        <th>@Localizer["TotalRegistrations"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var evt in Model.OrderByDescending(e => e.EventDate))
+                    {
+                        <tr>
+                            <td>
+                                <strong>@evt.Title</strong>
+                                <br>
+                                <small class="text-muted">@evt.EventType</small>
+                            </td>
+                            <td>
+                                <i class="fas fa-calendar"></i> @evt.EventDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <i class="fas fa-map-marker-alt"></i> @evt.Venue
+                            </td>
+                            <td>
+                                @(evt.Registrations?.Count(r => r.Status == "Confirmed") ?? 0) / @evt.MaxCapacity
+                                <br>
+                                <small class="text-muted">
+                                    @(evt.Registrations?.Count(r => r.Status == "Waitlist") ?? 0) @Localizer["Waitlist"]
+                                </small>
+                            </td>
+                            <td>
+                                @if (evt.IsApproved)
+                                {
+                                    <span class="badge bg-success">@Localizer["Confirmed"]</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-warning">@Localizer["PendingApproval"]</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-buttons-group" role="group">
+                                    <a asp-action="Details" asp-controller="Events" asp-route-id="@evt.EventID" class="btn btn-sm btn-info" title="@Localizer["View"]">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-controller="Events" asp-route-id="@evt.EventID" class="btn btn-sm btn-warning" title="@Localizer["Edit"]">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a asp-action="GenerateEventQR" asp-controller="Admin" asp-route-eventId="@evt.EventID" class="btn btn-sm btn-success" title="@Localizer["GenerateQRForAttendance"]">
+                                        <i class="fas fa-qrcode"></i>
+                                    </a>
+                                    <a asp-action="EventStatistics" asp-controller="Admin" asp-route-eventId="@evt.EventID" class="btn btn-sm btn-primary" title="@Localizer["Statistics"]">
+                                        <i class="fas fa-chart-bar"></i>
+                                    </a>
+                                    <a asp-action="ViewAttendance" asp-controller="Admin" asp-route-eventId="@evt.EventID" class="btn btn-sm btn-secondary" title="@Localizer["Participants"]">
+                                        <i class="fas fa-list"></i>
+                                    </a>
+                                    <form asp-action="Delete" asp-controller="Events" asp-route-id="@evt.EventID" method="post" style="display: inline;" onsubmit="return confirm('@Localizer["ConfirmDeleteEvent"]');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-sm btn-danger" title="@Localizer["Delete"]">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

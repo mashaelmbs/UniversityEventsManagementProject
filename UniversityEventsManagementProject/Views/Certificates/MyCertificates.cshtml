@@ -1,0 +1,246 @@
+@model List<UniversityEventsManagement.Models.Certificate>
+@using System.Linq
+
+@{
+    ViewData["Title"] = "شهاداتي";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<style>
+    :root {
+        --brown-primary: #6F4E37;
+        --brown-secondary: #A67C52;
+        --brown-dark: #4B3621;
+        --brown-light: #EFE6DD;
+    }
+
+    .certificates-header {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(111, 78, 55, 0.3);
+    }
+
+    .certificates-header h1 {
+        color: white;
+        font-weight: 700;
+        margin: 0;
+        font-size: 2.2rem;
+    }
+
+    .certificates-header p {
+        color: rgba(255, 255, 255, 0.9);
+        margin: 10px 0 0 0;
+        font-size: 1.1rem;
+    }
+
+    .certificates-table {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 24px rgba(111, 78, 55, 0.15);
+        overflow: hidden;
+        border: 2px solid var(--brown-light);
+    }
+
+    .certificates-table thead {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        color: white;
+    }
+
+    .certificates-table thead th {
+        color: white;
+        font-weight: 700;
+        padding: 20px;
+        border: none;
+        text-align: right;
+    }
+
+    .certificates-table tbody tr {
+        transition: all 0.3s ease;
+        border-bottom: 1px solid var(--brown-light);
+    }
+
+    .certificates-table tbody tr:hover {
+        background: var(--brown-light);
+        transform: translateX(-5px);
+    }
+
+    .certificates-table tbody td {
+        padding: 20px;
+        vertical-align: middle;
+        color: var(--brown-dark);
+    }
+
+    .event-title {
+        color: var(--brown-primary);
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 5px;
+    }
+
+    .event-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+    }
+
+    .cert-number {
+        color: var(--brown-dark);
+        font-weight: 600;
+        font-family: 'Courier New', monospace;
+    }
+
+    .badge-custom {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, #28a745 0%, #5E8C3E 100%);
+        color: white;
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, #E2B13C 0%, #d4a017 100%);
+        color: white;
+    }
+
+    .btn-action {
+        border-radius: 8px;
+        padding: 8px 15px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: 2px solid;
+    }
+
+    .btn-view {
+        background: white;
+        border-color: var(--brown-primary);
+        color: var(--brown-primary);
+    }
+
+    .btn-view:hover {
+        background: var(--brown-primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3);
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border-color: var(--brown-primary);
+        color: white;
+    }
+
+    .btn-download:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 24px rgba(111, 78, 55, 0.15);
+    }
+
+    .empty-state i {
+        font-size: 5rem;
+        color: var(--brown-light);
+        margin-bottom: 20px;
+    }
+
+    .empty-state h3 {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+
+    .empty-state p {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+</style>
+
+<div class="container">
+    <div class="certificates-header">
+        <h1><i class="fas fa-award"></i> شهاداتي</h1>
+        <p>عرض جميع الشهادات التي حصلت عليها من الفعاليات</p>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="empty-state">
+            <i class="fas fa-certificate"></i>
+            <h3>لا توجد شهادات</h3>
+            <p>لم تحصل على أي شهادات حتى الآن. سجل في الفعاليات وحضرها للحصول على شهادات.</p>
+        </div>
+    }
+    else
+    {
+        <div class="certificates-table">
+            <table class="table mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="fas fa-calendar-check"></i> الفعالية</th>
+                        <th><i class="fas fa-hashtag"></i> رقم الشهادة</th>
+                        <th><i class="fas fa-calendar"></i> تاريخ الإصدار</th>
+                        <th><i class="fas fa-clock"></i> ساعات التطوع</th>
+                        <th><i class="fas fa-info-circle"></i> الحالة</th>
+                        <th class="text-center"><i class="fas fa-cog"></i> الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cert in Model.OrderByDescending(c => c.IssueDate))
+                    {
+                        <tr>
+                            <td>
+                                <div class="event-title">@cert.Event?.Title</div>
+                                <div class="event-date">
+                                    <i class="fas fa-calendar-alt"></i> @cert.Event?.EventDate.ToString("dd/MM/yyyy")
+                                </div>
+                            </td>
+                            <td>
+                                <span class="cert-number">@cert.CertificateNumber</span>
+                            </td>
+                            <td>@cert.IssueDate.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <strong style="color: var(--brown-primary);">@cert.Event?.VolunteerHours</strong> ساعة
+                            </td>
+                            <td>
+                                <span class="badge-custom @(cert.IsDownloaded ? "badge-success" : "badge-warning")">
+                                    @if (cert.IsDownloaded)
+                                    {
+                                        <text><i class="fas fa-check-circle"></i> تم التحميل</text>
+                                    }
+                                    else
+                                    {
+                                        <text><i class="fas fa-clock"></i> في انتظار التحميل</text>
+                                    }
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <div class="btn-group">
+                                    <a href="/Certificates/Details/@cert.CertificateID" class="btn btn-action btn-view" title="عرض التفاصيل">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="/Certificates/Download/@cert.CertificateID?template=classic&language=ar" class="btn btn-action btn-download" title="تحميل الشهادة">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

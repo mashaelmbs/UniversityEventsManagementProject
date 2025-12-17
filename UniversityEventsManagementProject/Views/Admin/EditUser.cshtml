@@ -1,0 +1,107 @@
+@model UniversityEventsManagement.Models.ApplicationUser
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+@{
+    ViewData["Title"] = Localizer["EditUserTitle"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/Admin/ManageUsers" class="btn btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-right"></i> @Localizer["BackToUsersList"]
+            </a>
+            <h1 class="mb-2"><i class="fas fa-user-edit"></i> @Localizer["EditUserTitle"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@Localizer["UserData"]</h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditUser" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="PasswordHash" />
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label">@Localizer["FirstName"]</label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label">@Localizer["FamilyName"]</label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label">@Localizer["Email"]</label>
+                                <input asp-for="Email" class="form-control" type="email" />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UniversityID" class="form-label">@Localizer["UniversityID"]</label>
+                                <input asp-for="UniversityID" class="form-control" />
+                                <span asp-validation-for="UniversityID" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="PhoneNumber" class="form-label">@Localizer["PhoneNumber"]</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="Department" class="form-label">@Localizer["DepartmentLabel"]</label>
+                                <input asp-for="Department" class="form-control" />
+                                <span asp-validation-for="Department" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="UserType" class="form-label">@Localizer["UserType"]</label>
+                                <select asp-for="UserType" class="form-select">
+                                    <option value="Student" selected="@(Model.UserType == "Student")">@Localizer["Student"]</option>
+                                    <option value="Admin" selected="@(Model.UserType == "Admin")">@Localizer["Administrator"]</option>
+                                </select>
+                                <span asp-validation-for="UserType" class="text-danger"></span>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label asp-for="IsActive" class="form-label">@Localizer["StatusLabel"]</label>
+                                <div class="form-check form-switch mt-2">
+                                    <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                                    <label class="form-check-label" asp-for="IsActive">
+                                        @(Model.IsActive ? Localizer["Active"] : Localizer["Inactive"])
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> @Localizer["SaveChanges"]
+                            </button>
+                            <a href="/Admin/ManageUsers" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> @Localizer["Cancel"]
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+

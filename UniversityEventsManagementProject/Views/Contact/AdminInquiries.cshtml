@@ -1,0 +1,312 @@
+@model IEnumerable<UniversityEventsManagement.Models.Contact>
+
+@{
+    ViewData["Title"] = "إدارة الاستفسارات";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    :root {
+        --brown-primary: #6F4E37;
+        --brown-secondary: #A67C52;
+        --brown-dark: #4B3621;
+        --brown-light: #EFE6DD;
+    }
+
+    .inquiries-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px 0;
+    }
+
+    .inquiries-header h1 {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .inquiry-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        border-right: 4px solid var(--brown-primary);
+        transition: all 0.3s ease;
+    }
+
+    .inquiry-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.2);
+    }
+
+    .inquiry-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+    }
+
+    .inquiry-title {
+        color: var(--brown-primary);
+        font-weight: 600;
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .inquiry-meta {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .meta-item strong {
+        color: var(--brown-primary);
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-question {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .badge-suggestion {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .badge-complaint {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+
+    .badge-resolved {
+        background-color: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .badge-pending {
+        background-color: #fff3e0;
+        color: #e65100;
+    }
+
+    .inquiry-message {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        color: #6c757d;
+        line-height: 1.6;
+    }
+
+    .inquiry-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-view {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-view:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+        color: white;
+    }
+
+    .btn-delete {
+        background: #dc3545;
+        border: none;
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .btn-delete:hover {
+        background: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        color: var(--brown-primary);
+        margin-bottom: 10px;
+    }
+
+    .filter-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+
+    .filter-btn {
+        padding: 8px 16px;
+        border: 2px solid #e0e0e0;
+        background: white;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .filter-btn.active {
+        background: var(--brown-primary);
+        color: white;
+        border-color: var(--brown-primary);
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="inquiries-header">
+        <h1><i class="fas fa-comments"></i> إدارة الاستفسارات والشكاوى</h1>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+
+    @if (Model.Any())
+    {
+        @foreach (var inquiry in Model)
+        {
+            <div class="inquiry-card">
+                <div class="inquiry-header">
+                    <h3 class="inquiry-title">@inquiry.Subject</h3>
+                    <div>
+                        <span class="badge @GetInquiryTypeBadgeClass(inquiry.InquiryType)">
+                            @GetInquiryTypeLabel(inquiry.InquiryType)
+                        </span>
+                        <span class="badge @(inquiry.IsResolved ? "badge-resolved" : "badge-pending")">
+                            @(inquiry.IsResolved ? "تم الرد" : "قيد الانتظار")
+                        </span>
+                    </div>
+                </div>
+
+                <div class="inquiry-meta">
+                    <div class="meta-item">
+                        <i class="fas fa-user"></i>
+                        <strong>@inquiry.FullName</strong>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-envelope"></i>
+                        <a href="mailto:@inquiry.Email">@inquiry.Email</a>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-phone"></i>
+                        <a href="tel:@inquiry.PhoneNumber">@inquiry.PhoneNumber</a>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-calendar"></i>
+                        @inquiry.SubmittedDate.ToString("dd/MM/yyyy HH:mm")
+                    </div>
+                </div>
+
+                <div class="inquiry-message">
+                    @inquiry.Message
+                </div>
+
+                @if (inquiry.IsResolved && !string.IsNullOrEmpty(inquiry.AdminResponse))
+                {
+                    <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-right: 3px solid #2e7d32;">
+                        <strong style="color: #2e7d32;">الرد:</strong>
+                        <p style="margin: 10px 0 0 0; color: #6c757d;">@inquiry.AdminResponse</p>
+                        <small style="color: #999;">@inquiry.ResponseDate?.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                }
+
+                <div class="inquiry-actions">
+                    <a href="/Contact/Details/@inquiry.ContactID" class="btn btn-view">
+                        <i class="fas fa-eye"></i> عرض التفاصيل
+                    </a>
+                    <form method="post" action="/Contact/Delete/@inquiry.ContactID" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-delete" onclick="return confirm('هل أنت متأكد من حذف هذا الاستفسار؟')">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h4>لا توجد استفسارات</h4>
+            <p>لم يتم استقبال أي استفسارات حتى الآن</p>
+        </div>
+    }
+</div>
+
+@{
+    string GetInquiryTypeLabel(string type)
+    {
+        return type switch
+        {
+            "سؤال" => "سؤال",
+            "اقتراح" => "اقتراح",
+            "شكوى" => "شكوى",
+            _ => type
+        };
+    }
+
+    string GetInquiryTypeBadgeClass(string type)
+    {
+        return type switch
+        {
+            "سؤال" => "badge-question",
+            "اقتراح" => "badge-suggestion",
+            "شكوى" => "badge-complaint",
+            _ => "badge-question"
+        };
+    }
+}

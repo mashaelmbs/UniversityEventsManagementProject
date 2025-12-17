@@ -1,0 +1,120 @@
+@model List<UniversityEventsManagement.Models.ApplicationUser>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+@inject UniversityEventsManagement.Data.ApplicationDbContext DbContext
+
+@{
+    ViewData["Title"] = Localizer["IssueCertificatesForEvent"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var selectedEvent = ViewBag.Event as UniversityEventsManagement.Models.Event;
+    var eventId = selectedEvent?.EventID ?? 0;
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-certificate"></i> إصدار شهادات</h1>
+            <div class="card bg-light mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-calendar-alt"></i> @selectedEvent?.Title
+                    </h5>
+                    <p class="card-text mb-0">
+                        <i class="fas fa-map-marker-alt"></i> @selectedEvent?.Venue
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-clock"></i> @selectedEvent?.EventDate.ToString("dd/MM/yyyy")
+                        <span class="mx-2">|</span>
+                        <i class="fas fa-hourglass-end"></i> @selectedEvent?.VolunteerHours ساعة تطوع
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model == null || !Model.Any())
+    {
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> لا يوجد طلاب حاضرين في هذه الفعالية.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-users"></i> الطلاب الحاضرون (@Model.Count)</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الاسم</th>
+                                <th>الرقم الجامعي</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>ساعات التطوع</th>
+                                <th>حالة الشهادة</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                var hasCertificate = selectedEvent != null && DbContext?.Certificates != null && DbContext.Certificates
+                                    .Any(c => c.EventID == selectedEvent.EventID && c.UserID == user.Id);
+                                <tr>
+                                    <td>
+                                        <strong>@user.FirstName @user.LastName</strong>
+                                    </td>
+                                    <td>@user.UniversityID</td>
+                                    <td>@user.Email</td>
+                                    <td>
+                                        <span class="badge bg-info">@user.TotalVolunteerHours</span>
+                                    </td>
+                                    <td>
+                                        @if (hasCertificate)
+                                        {
+                                            <span class="badge bg-success">تم الإصدار</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">لم يتم الإصدار</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (!hasCertificate && selectedEvent != null)
+                                        {
+                                            <form method="post" action="/Certificates/IssueCertificateConfirm" style="display:inline;">
+                                                <input type="hidden" name="eventId" value="@selectedEvent.EventID">
+                                                <input type="hidden" name="userId" value="@user.Id">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-primary" onclick="return confirm('هل تريد إصدار شهادة للطالب @user.FirstName @user.LastName؟')">
+                                                    <i class="fas fa-certificate"></i> إصدار شهادة
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">تم الإصدار</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row mt-4">
+        <div class="col-12">
+            <a href="/Certificates/IssueCertificate" class="btn btn-secondary">
+                <i class="fas fa-arrow-right"></i> العودة للقائمة
+            </a>
+            <a href="/Certificates/AllCertificates" class="btn btn-info">
+                <i class="fas fa-list"></i> عرض جميع الشهادات
+            </a>
+        </div>
+    </div>
+</div>

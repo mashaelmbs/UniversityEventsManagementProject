@@ -1,0 +1,467 @@
+@model UniversityEventsManagement.Models.Contact
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["Contact"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+
+<style>
+    .contact-wrapper {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .contact-header {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .contact-header h1 {
+        font-size: 26px;
+        font-weight: 700;
+        color: #6F4E37;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .contact-header p {
+        color: #6B7280;
+        font-size: 14px;
+        margin: 0;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: 1fr 300px;
+        gap: 24px;
+    }
+
+    @@media (max-width: 768px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Form Card */
+    .contact-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #F3F4F6;
+    }
+
+    .card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1F2937;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .card-title i {
+        color: #6F4E37;
+    }
+
+    /* Form Styles */
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    @@media (max-width: 576px) {
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+
+    .form-group label .required {
+        color: #EF4444;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #E5E7EB;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: inherit;
+        transition: all 0.2s ease;
+        background: #FAFAFA;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #6F4E37;
+        background: white;
+        box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .form-group .text-danger {
+        color: #EF4444;
+        font-size: 12px;
+        margin-top: 4px;
+        display: block;
+    }
+
+    /* Inquiry Type Buttons */
+    .inquiry-types {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .inquiry-type-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 10px 12px;
+        border: 1px solid #E5E7EB;
+        background: #FAFAFA;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6B7280;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .inquiry-type-btn:hover {
+        border-color: #6F4E37;
+        background: #FAF8F5;
+    }
+
+    .inquiry-type-btn.active {
+        border-color: #6F4E37;
+        background: #6F4E37;
+        color: white;
+    }
+
+    .inquiry-type-btn i {
+        font-size: 14px;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+        width: 100%;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #6F4E37, #8B6914);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3);
+    }
+
+    /* Info Card */
+    .info-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border: 1px solid #F3F4F6;
+        height: fit-content;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 14px 0;
+        border-bottom: 1px solid #F3F4F6;
+    }
+
+    .info-item:first-child {
+        padding-top: 0;
+    }
+
+    .info-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .info-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #6F4E37, #A67C52);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .info-content h4 {
+        font-size: 13px;
+        font-weight: 600;
+        color: #1F2937;
+        margin: 0 0 4px 0;
+    }
+
+    .info-content p {
+        font-size: 12px;
+        color: #6B7280;
+        margin: 0;
+        line-height: 1.5;
+    }
+
+    .info-content a {
+        color: #6F4E37;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .info-content a:hover {
+        text-decoration: underline;
+    }
+
+    /* Success Alert */
+    .alert-success {
+        background: #ECFDF5;
+        border: 1px solid #A7F3D0;
+        color: #065F46;
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+    }
+
+    .alert-success i {
+        color: #10B981;
+    }
+
+    /* Social Links */
+    .social-links {
+        display: flex;
+        gap: 8px;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px solid #F3F4F6;
+    }
+
+    .social-link {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #6B7280;
+        background: #F3F4F6;
+        transition: all 0.2s ease;
+        font-size: 14px;
+    }
+
+    .social-link:hover {
+        background: #6F4E37;
+        color: white;
+    }
+</style>
+
+<div class="contact-wrapper">
+    <!-- Header -->
+    <div class="contact-header">
+        <h1><i class="fas fa-headset"></i> @Localizer["Contact"]</h1>
+        <p>@Localizer["ContactWelcomeMessage"]</p>
+    </div>
+
+    <!-- Success Message -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    <!-- Contact Grid -->
+    <div class="contact-grid">
+        <!-- Contact Form -->
+        <div class="contact-card">
+            <div class="card-title">
+                <i class="fas fa-paper-plane"></i>
+                @Localizer["SendUsMessage"]
+            </div>
+
+            <form asp-action="Submit" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>@Localizer["FullName"] <span class="required">*</span></label>
+                        <input type="text" name="FullName" placeholder="@Localizer["EnterYourName"]" required>
+                        <span class="text-danger">@Html.ValidationMessage("FullName")</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>@Localizer["Email"] <span class="required">*</span></label>
+                        <input type="email" name="Email" placeholder="example@email.com" required>
+                        <span class="text-danger">@Html.ValidationMessage("Email")</span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["PhoneNumber"] <span class="required">*</span></label>
+                    <input type="tel" name="PhoneNumber" placeholder="+966 5XX XXX XXXX" required>
+                    <span class="text-danger">@Html.ValidationMessage("PhoneNumber")</span>
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["InquiryType"] <span class="required">*</span></label>
+                    <div class="inquiry-types">
+                        <button type="button" class="inquiry-type-btn" data-type="@Localizer["Question"]">
+                            <i class="fas fa-question-circle"></i> @Localizer["Question"]
+                        </button>
+                        <button type="button" class="inquiry-type-btn" data-type="@Localizer["Suggestion"]">
+                            <i class="fas fa-lightbulb"></i> @Localizer["Suggestion"]
+                        </button>
+                        <button type="button" class="inquiry-type-btn" data-type="@Localizer["Complaint"]">
+                            <i class="fas fa-flag"></i> @Localizer["Complaint"]
+                        </button>
+                    </div>
+                    <input type="hidden" id="InquiryType" name="InquiryType" value="">
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["Subject"] <span class="required">*</span></label>
+                    <input type="text" name="Subject" placeholder="@Localizer["EnterSubject"]" required>
+                    <span class="text-danger">@Html.ValidationMessage("Subject")</span>
+                </div>
+
+                <div class="form-group">
+                    <label>@Localizer["Message"] <span class="required">*</span></label>
+                    <textarea name="Message" placeholder="@Localizer["WriteYourMessage"]" required></textarea>
+                    <span class="text-danger">@Html.ValidationMessage("Message")</span>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-paper-plane"></i>
+                    @Localizer["SendMessage"]
+                </button>
+            </form>
+        </div>
+
+        <!-- Contact Info -->
+        <div class="info-card">
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-map-marker-alt"></i>
+                </div>
+                <div class="info-content">
+                    <h4>@Localizer["Address"]</h4>
+                    <p>@Localizer["UniversityAddress"]</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <div class="info-content">
+                    <h4>@Localizer["Phone"]</h4>
+                    <p dir="ltr">+966 XX XXX XXXX</p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="info-content">
+                    <h4>@Localizer["Email"]</h4>
+                    <p><a href="mailto:events@university.edu.sa">events@university.edu.sa</a></p>
+                </div>
+            </div>
+
+            <div class="info-item">
+                <div class="info-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="info-content">
+                    <h4>@Localizer["WorkingHours"]</h4>
+                    <p>@Localizer["WorkingHoursDetails"]</p>
+                </div>
+            </div>
+
+            <div class="social-links">
+                <a href="#" class="social-link" title="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#" class="social-link" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" class="social-link" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                <a href="#" class="social-link" title="YouTube"><i class="fab fa-youtube"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const inquiryTypeBtns = document.querySelectorAll('.inquiry-type-btn');
+        const inquiryTypeInput = document.getElementById('InquiryType');
+
+        inquiryTypeBtns.forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                inquiryTypeBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                inquiryTypeInput.value = this.getAttribute('data-type');
+            });
+        });
+    });
+</script>

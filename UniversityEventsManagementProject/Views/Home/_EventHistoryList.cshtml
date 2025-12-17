@@ -1,0 +1,103 @@
+@model List<UniversityEventsManagement.Models.Registration>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle"></i> @Localizer["NoEventsInCategory"]
+    </div>
+}
+else
+{
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>@Localizer["EventName"]</th>
+                            <th>@Localizer["DateCol"]</th>
+                            <th>@Localizer["Location"]</th>
+                            <th>@Localizer["Status"]</th>
+                            <th>@Localizer["AttendanceStatus"]</th>
+                            <th>@Localizer["CertificateStatus"]</th>
+                            <th>@Localizer["Actions"]</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var reg in Model.OrderByDescending(r => r.Event.EventDate))
+                        {
+                            var isCompleted = reg.Event.EventDate < DateTime.Now;
+                            var hasAttendance = reg.Event.Attendances?.Any(a => a.UserID == reg.UserID && a.IsPresent) ?? false;
+                            var hasCertificate = reg.Event.Certificates?.Any(c => c.UserID == reg.UserID) ?? false;
+                            <tr>
+                                <td>
+                                    <strong>@reg.Event.Title</strong>
+                                    <div class="text-muted small">@reg.Event.EventType</div>
+                                </td>
+                                <td>
+                                    <i class="fas fa-calendar"></i> @reg.Event.EventDate.ToString("dd/MM/yyyy HH:mm")
+                                </td>
+                                <td>
+                                    <i class="fas fa-map-marker-alt"></i> @reg.Event.Venue
+                                </td>
+                                <td>
+                                    <span class="badge bg-@(reg.Status == "Confirmed" ? "success" : (reg.Status == "Waitlist" ? "warning" : "danger"))">
+                                        @reg.Status
+                                    </span>
+                                    @if (isCompleted)
+                                    {
+                                        <span class="badge bg-info">@Localizer["Completed"]</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (hasAttendance)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-check"></i> @Localizer["Present"]</span>
+                                    }
+                                    else if (isCompleted)
+                                    {
+                                        <span class="badge bg-danger"><i class="fas fa-times"></i> @Localizer["Absent"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@Localizer["NotStarted"]</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (hasCertificate)
+                                    {
+                                        <span class="badge bg-success"><i class="fas fa-certificate"></i> @Localizer["Available"]</span>
+                                    }
+                                    else if (isCompleted && hasAttendance)
+                                    {
+                                        <span class="badge bg-warning">@Localizer["Pending"]</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="/Events/Details/@reg.Event.EventID" class="btn btn-sm btn-info" title="@Localizer["ViewDetails"]">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (hasCertificate)
+                                        {
+                                            <a href="/Certificates/MyCertificates" class="btn btn-sm btn-success" title="@Localizer["ViewCertificate"]">
+                                                <i class="fas fa-certificate"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+

@@ -1,0 +1,108 @@
+@model dynamic
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+@{
+    ViewData["Title"] = Localizer["ViewUser"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <a href="/Admin/ManageUsers" class="btn btn-outline-secondary mb-3">
+                <i class="fas fa-arrow-right"></i> @Localizer["BackToUsersList"]
+            </a>
+            <h1 class="mb-2"><i class="fas fa-user"></i> @Localizer["ViewUser"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">@Localizer["PersonalData"]</h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row">
+                        <dt class="col-sm-4">@Localizer["FullName"]:</dt>
+                        <dd class="col-sm-8">@(Model?.User?.FirstName ?? "") @(Model?.User?.LastName ?? "")</dd>
+                        
+                        <dt class="col-sm-4">@Localizer["Email"]:</dt>
+                        <dd class="col-sm-8">@Model.User.Email</dd>
+                        
+                        <dt class="col-sm-4">@Localizer["UniversityID"]:</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.User.UniversityID) ? "-" : Model.User.UniversityID)</dd>
+                        
+                        <dt class="col-sm-4">@Localizer["PhoneNumber"]:</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.User.PhoneNumber) ? "-" : Model.User.PhoneNumber)</dd>
+                        
+                        <dt class="col-sm-4">@Localizer["Department"]:</dt>
+                        <dd class="col-sm-8">@(string.IsNullOrEmpty(Model.User.Department) ? "-" : Model.User.Department)</dd>
+                        
+                        <dt class="col-sm-4">@Localizer["UserType"]:</dt>
+                        <dd class="col-sm-8">
+                            <span class="badge bg-primary">
+                                @(Model.User.UserType switch {
+                                    "Student" => Localizer["Student"],
+                                    "Admin" => Localizer["Admin"],
+                                    _ => Model.User.UserType ?? Localizer["Undefined"]
+                                })
+                            </span>
+                        </dd>
+                        
+                        <dt class="col-sm-4">@Localizer["Roles"]:</dt>
+                        <dd class="col-sm-8">
+                            @foreach (var role in Model.Roles)
+                            {
+                                <span class="badge bg-info me-1">@role</span>
+                            }
+                        </dd>
+                        
+                        <dt class="col-sm-4">@Localizer["JoinDate"]:</dt>
+                        <dd class="col-sm-8">@Model.User.JoinDate.ToString("yyyy-MM-dd")</dd>
+                        
+                        <dt class="col-sm-4">@Localizer["Status"]:</dt>
+                        <dd class="col-sm-8">
+                            @{
+                                var status = Localizer["InactiveStatus"];
+                                var statusClass = "warning";
+                                if (Model.User.IsActive)
+                                {
+                                    status = Localizer["Active"];
+                                    statusClass = "success";
+                                }
+                            }
+                            <span class="badge bg-@statusClass">@status</span>
+                        </dd>
+                        
+                        <dt class="col-sm-4">@Localizer["VolunteerHours"]:</dt>
+                        <dd class="col-sm-8">@Model.User.TotalVolunteerHours</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h6 class="mb-0">@Localizer["Statistics"]</h6>
+                </div>
+                <div class="card-body">
+                    <p><strong>@Localizer["RegisteredEvents"]:</strong> @Model.Registrations.Count</p>
+                    <p><strong>@Localizer["AttendedEvents"]:</strong> @Model.Attendances.Count</p>
+                    <p><strong>@Localizer["Certificates"]:</strong> @Model.Certificates.Count</p>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-body">
+                    <a href="/Admin/EditUser/@Model.User.Id" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-edit"></i> @Localizer["EditUser"]
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

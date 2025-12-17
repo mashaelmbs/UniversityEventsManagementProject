@@ -1,0 +1,167 @@
+@model UniversityEventsManagement.Models.Event
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["GenerateEventQR"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .qr-container {
+        text-align: center;
+        padding: 20px;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .qr-code-image {
+        max-width: 100%;
+        height: auto;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        padding: 10px;
+        background: white;
+    }
+    
+    .print-section {
+        margin-top: 30px;
+    }
+    
+    @@media print {
+        .no-print {
+            display: none !important;
+        }
+        .qr-container {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-qrcode"></i> @Localizer["GenerateEventQR"]</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header">
+                    <h4><i class="fas fa-info-circle"></i> @Localizer["EventInformation"]</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>@Localizer["EventName"]:</strong> @Model.Title
+                        </div>
+                        <div class="col-md-6">
+                            <strong>@Localizer["Date"]:</strong> @Model.EventDate.ToString("dd/MM/yyyy HH:mm")
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>@Localizer["Location"]:</strong> @Model.Venue
+                        </div>
+                        <div class="col-md-6">
+                            <strong>@Localizer["EventType"]:</strong> @Model.EventType
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="qr-container">
+                        <h5 class="mb-3">@Localizer["QRCodeForAttendance"]</h5>
+                        <p class="text-muted mb-3">@Localizer["ScanQRToCheckIn"]</p>
+                        
+                        @if (ViewBag.QRCodeBase64 != null)
+                        {
+                            <img src="@ViewBag.QRCodeBase64" alt="QR Code" class="qr-code-image" />
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">@Localizer["QRCodeNotGenerated"]</div>
+                        }
+                        
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <i class="fas fa-link"></i> @Localizer["Link"]: 
+                                <code>@ViewBag.QRUrl</code>
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="print-section no-print">
+                        <div class="d-flex gap-2 justify-content-center mt-4">
+                            <button onclick="printQRCodeOnly()" class="btn btn-primary">
+                                <i class="fas fa-print"></i> @Localizer["PrintQRCode"]
+                            </button>
+                            <a href="@Url.Action("GetQRCodeImage", "Admin", new { eventId = Model.EventID })" class="btn btn-success" download>
+                                <i class="fas fa-download"></i> @Localizer["DownloadQRCode"]
+                            </a>
+                            <a href="@Url.Action("ManageEvents", "Admin")" class="btn btn-secondary">
+                                <i class="fas fa-arrow-right"></i> @Localizer["BackToList"]
+                            </a>
+                            <a href="@Url.Action("Details", "Events", new { id = Model.EventID })" class="btn btn-info">
+                                <i class="fas fa-eye"></i> @Localizer["ViewEvent"]
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert alert-info no-print mt-4">
+                <i class="fas fa-info-circle"></i>
+                <strong>@Localizer["Note"]:</strong> @Localizer["QRCodeNote"]
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function printQRCodeOnly() {
+        // Get the QR code image URL
+        var qrImageUrl = '@Url.Action("GetQRCodeImage", "Admin", new { eventId = Model.EventID })';
+        var eventTitle = '@Html.Raw(System.Net.WebUtility.HtmlEncode(Model.Title ?? ""))';
+        var eventDate = '@Model.EventDate.ToString("dd/MM/yyyy HH:mm")';
+        
+        // Create a new window with only the image
+        var printWindow = window.open('', '_blank');
+        var htmlParts = [];
+        htmlParts.push('<!DOCTYPE html>');
+        htmlParts.push('<html>');
+        htmlParts.push('<head>');
+        htmlParts.push('<title>QR Code - ' + eventTitle + '</title>');
+        htmlParts.push('<style>');
+        htmlParts.push('@@media print {');
+        htmlParts.push('  @@page { margin: 0; size: auto; }');
+        htmlParts.push('  body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }');
+        htmlParts.push('}');
+        htmlParts.push('body { margin: 0; padding: 20px; display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; font-family: Arial, sans-serif; }');
+        htmlParts.push('.qr-image { max-width: 100%; height: auto; border: 2px solid #000; padding: 20px; background: white; }');
+        htmlParts.push('.event-info { text-align: center; margin-bottom: 20px; }');
+        htmlParts.push('.event-title { font-size: 18px; font-weight: bold; margin-bottom: 10px; }');
+        htmlParts.push('.event-date { font-size: 14px; color: #666; }');
+        htmlParts.push('</style>');
+        htmlParts.push('</head>');
+        htmlParts.push('<body>');
+        htmlParts.push('<div class="event-info">');
+        htmlParts.push('<div class="event-title">' + eventTitle + '</div>');
+        htmlParts.push('<div class="event-date">' + eventDate + '</div>');
+        htmlParts.push('</div>');
+        htmlParts.push('<img src="' + qrImageUrl + '" alt="QR Code" class="qr-image" />');
+        htmlParts.push('<script>');
+        htmlParts.push('window.onload = function() { window.print(); };');
+        htmlParts.push('</' + 'script>');
+        htmlParts.push('</body>');
+        htmlParts.push('</html>');
+        
+        printWindow.document.write(htmlParts.join('\n'));
+        printWindow.document.close();
+    }
+</script>
+

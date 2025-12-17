@@ -1,0 +1,523 @@
+@model dynamic
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = "الأندية الطلابية";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+
+<style>
+    :root {
+        --brown-primary: #6F4E37;
+        --brown-secondary: #A67C52;
+        --brown-dark: #4B3621;
+        --brown-light: #EFE6DD;
+    }
+
+    .clubs-page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding: 20px 0;
+    }
+
+    .clubs-page-header h1 {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .btn-suggest-activity {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border: none;
+        color: white;
+        padding: 12px 25px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+    }
+
+    .btn-suggest-activity:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        color: white;
+    }
+
+    .section-title {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 3px solid var(--brown-light);
+    }
+
+    .club-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+        border-right: 4px solid var(--brown-primary);
+        height: 100%;
+    }
+
+    .club-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.2);
+    }
+
+    .club-card-header {
+        display: flex;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .club-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        margin-left: 15px;
+        color: white;
+    }
+
+    .club-icon.volunteer {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+    }
+
+    .club-icon.reading {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    }
+
+    .club-icon.programming {
+        background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+    }
+
+    .club-icon.photography {
+        background: linear-gradient(135deg, var(--brown-secondary) 0%, var(--brown-primary) 100%);
+    }
+
+    .club-icon.sports {
+        background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+    }
+
+    .club-icon.music {
+        background: linear-gradient(135deg, #fd7e14 0%, #e8650e 100%);
+    }
+
+    .club-icon.arts {
+        background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    }
+
+    .club-icon.default {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+    }
+
+    .club-title {
+        color: var(--brown-primary);
+        font-weight: 700;
+        font-size: 20px;
+        margin: 0;
+    }
+
+    .club-description {
+        color: #6c757d;
+        margin-bottom: 20px;
+        line-height: 1.6;
+    }
+
+    .club-stats {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .stat-badge {
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .stat-badge.members {
+        background-color: var(--brown-light);
+        color: var(--brown-primary);
+    }
+
+    .stat-badge.hours {
+        background-color: #e8f5e9;
+        color: #388e3c;
+    }
+
+    .btn-view-details {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+    }
+
+    .btn-view-details:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        color: white;
+    }
+
+    .btn-join {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+    }
+
+    .btn-join:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        color: white;
+    }
+
+    .search-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .search-input {
+        border: 2px solid var(--brown-light);
+        border-radius: 8px;
+        padding: 12px 20px;
+        width: 100%;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: var(--brown-primary);
+        box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+    }
+
+    .search-input-wrapper {
+        position: relative;
+    }
+
+    .search-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--brown-primary);
+        font-size: 18px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        color: var(--brown-primary);
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container-fluid">
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    <!-- Header -->
+    <div class="clubs-page-header">
+        <h1><i class="fas fa-users"></i> الأندية الطلابية</h1>
+        <div>
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="/Clubs/Create" class="btn btn-suggest-activity me-2">
+                    <i class="fas fa-plus"></i> إنشاء نادي جديد
+                </a>
+            }
+            <a href="/Events/Create" class="btn btn-suggest-activity">
+                <i class="fas fa-lightbulb"></i> اقتراح فعالية
+            </a>
+        </div>
+    </div>
+
+    @if (Model?.IsAdmin == true)
+    {
+        <!-- Admin View: All Clubs -->
+        <h2 class="section-title">
+            <i class="fas fa-list"></i> جميع الأندية
+        </h2>
+
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" id="clubSearch" placeholder="ابحث عن نادي...">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+        </div>
+
+        @if (Model?.AllClubs != null && Model.AllClubs.Count > 0)
+        {
+            <div class="row" id="clubsGrid">
+                @foreach (var club in Model.AllClubs)
+                {
+                    var memberCount = club.Members?.Count ?? 0;
+                    var iconClass = GetClubIconClass(club.ClubName);
+
+                    <div class="col-md-6 col-lg-4 club-item" data-club-name="@club.ClubName.ToLower()">
+                        <div class="club-card">
+                            <div class="club-card-header">
+                                <div class="club-icon @iconClass">
+                                    <i class="@GetClubIcon(club.ClubName)"></i>
+                                </div>
+                                <h3 class="club-title">@club.ClubName</h3>
+                            </div>
+                            <p class="club-description">@(club.Description?.Length > 100 ? club.Description.Substring(0, 100) + "..." : club.Description)</p>
+                            <div class="club-stats">
+                                <span class="stat-badge members">
+                                    <i class="fas fa-users"></i> @memberCount عضو
+                                </span>
+                                @if (!club.IsActive)
+                                {
+                                    <span class="badge bg-secondary">غير نشط</span>
+                                }
+                            </div>
+                            <div class="mt-3 d-flex gap-2">
+                                <a href="/Clubs/Details/@club.ClubID" class="btn btn-view-details flex-grow-1">
+                                    <i class="fas fa-eye"></i> عرض التفاصيل
+                                </a>
+                                <a href="/Clubs/Edit/@club.ClubID" class="btn btn-outline-primary">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h4>لا توجد أندية</h4>
+                <p>ابدأ بإنشاء نادي جديد</p>
+            </div>
+        }
+    }
+    else
+    {
+        <!-- Student View: Joined and Available Clubs -->
+        <!-- My Clubs Section -->
+        @if (Model?.JoinedClubs != null && Model.JoinedClubs.Count > 0)
+        {
+            <h2 class="section-title">
+                <i class="fas fa-user-check"></i> الأندية المنضم إليها
+            </h2>
+            <div class="row">
+                @foreach (var club in Model.JoinedClubs)
+                {
+                    var memberCount = club.Members?.Count ?? 0;
+                    var totalHours = 0;
+                    if (Model.UserMemberships != null)
+                    {
+                        foreach (var membership in Model.UserMemberships)
+                        {
+                            if (membership.ClubID == club.ClubID)
+                            {
+                                totalHours = (membership.Club?.Members?.Count ?? 0) * 10;
+                                break;
+                            }
+                        }
+                    }
+                    var iconClass = GetClubIconClass(club.ClubName);
+
+                    <div class="col-md-6 col-lg-4">
+                        <div class="club-card">
+                            <div class="club-card-header">
+                                <div class="club-icon @iconClass">
+                                    <i class="@GetClubIcon(club.ClubName)"></i>
+                                </div>
+                                <h3 class="club-title">@club.ClubName</h3>
+                            </div>
+                            <p class="club-description">@club.Description</p>
+                            <div class="club-stats">
+                                <span class="stat-badge members">
+                                    <i class="fas fa-users"></i> @memberCount عضو
+                                </span>
+                                <span class="stat-badge hours">
+                                    <i class="fas fa-clock"></i> @totalHours ساعة
+                                </span>
+                            </div>
+                            <a href="/Clubs/Details/@club.ClubID" class="btn btn-view-details">
+                                <i class="fas fa-eye"></i> عرض التفاصيل
+                            </a>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+
+        <!-- Available Clubs Section -->
+        <h2 class="section-title" style="margin-top: 40px;">
+            <i class="fas fa-search"></i> الأندية المتاحة
+        </h2>
+
+        <!-- Search Bar -->
+        <div class="search-section">
+            <div class="search-input-wrapper">
+                <input type="text" class="search-input" id="clubSearch" placeholder="ابحث عن نادي...">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+        </div>
+
+        <!-- Available Clubs Grid -->
+        @if (Model?.AvailableClubs != null && Model.AvailableClubs.Count > 0)
+        {
+            <div class="row" id="clubsGrid">
+                @foreach (var club in Model.AvailableClubs)
+                {
+                    var memberCount = club.Members?.Count ?? 0;
+                    var iconClass = GetClubIconClass(club.ClubName);
+
+                    <div class="col-md-6 col-lg-3 club-item" data-club-name="@club.ClubName.ToLower()">
+                        <div class="club-card">
+                            <div class="club-card-header">
+                                <div class="club-icon @iconClass">
+                                    <i class="@GetClubIcon(club.ClubName)"></i>
+                                </div>
+                                <h3 class="club-title">@club.ClubName</h3>
+                            </div>
+                            <div class="club-stats">
+                                <span class="stat-badge members">
+                                    <i class="fas fa-users"></i> @memberCount عضو
+                                </span>
+                            </div>
+                            <form asp-action="JoinClub" method="post" style="margin-top: 15px;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="clubId" value="@club.ClubID" />
+                                <button type="submit" class="btn btn-join">
+                                    <i class="fas fa-user-plus"></i> الانضمام
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="empty-state">
+                <i class="fas fa-inbox"></i>
+                <h4>لا توجد أندية متاحة</h4>
+                <p>جميع الأندية متاحة للانضمام</p>
+            </div>
+        }
+    }
+</div>
+
+@{
+    string GetClubIcon(string clubName)
+    {
+        if (string.IsNullOrEmpty(clubName)) return "fas fa-users";
+        var name = clubName.ToLower();
+        if (name.Contains("تطوع") || name.Contains("volunteer"))
+            return "fas fa-heart";
+        if (name.Contains("قراءة") || name.Contains("reading"))
+            return "fas fa-book-open";
+        if (name.Contains("برمجة") || name.Contains("programming") || name.Contains("تقنية"))
+            return "fas fa-code";
+        if (name.Contains("تصوير") || name.Contains("photography"))
+            return "fas fa-camera";
+        if (name.Contains("رياضة") || name.Contains("sports"))
+            return "fas fa-trophy";
+        if (name.Contains("موسيقى") || name.Contains("music"))
+            return "fas fa-music";
+        if (name.Contains("فنون") || name.Contains("arts"))
+            return "fas fa-palette";
+        return "fas fa-users";
+    }
+
+    string GetClubIconClass(string clubName)
+    {
+        if (string.IsNullOrEmpty(clubName)) return "default";
+        var name = clubName.ToLower();
+        if (name.Contains("تطوع") || name.Contains("volunteer"))
+            return "volunteer";
+        if (name.Contains("قراءة") || name.Contains("reading"))
+            return "reading";
+        if (name.Contains("برمجة") || name.Contains("programming") || name.Contains("تقنية"))
+            return "programming";
+        if (name.Contains("تصوير") || name.Contains("photography"))
+            return "photography";
+        if (name.Contains("رياضة") || name.Contains("sports"))
+            return "sports";
+        if (name.Contains("موسيقى") || name.Contains("music"))
+            return "music";
+        if (name.Contains("فنون") || name.Contains("arts"))
+            return "arts";
+        return "default";
+    }
+}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('clubSearch');
+        const clubsGrid = document.getElementById('clubsGrid');
+        
+        if (searchInput && clubsGrid) {
+            searchInput.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const clubItems = clubsGrid.querySelectorAll('.club-item');
+                
+                clubItems.forEach(item => {
+                    const clubName = item.getAttribute('data-club-name');
+                    if (clubName.includes(searchTerm)) {
+                        item.style.display = '';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+    });
+</script>

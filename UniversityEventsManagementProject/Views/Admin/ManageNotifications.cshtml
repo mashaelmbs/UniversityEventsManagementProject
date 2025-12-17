@@ -1,0 +1,359 @@
+@model List<UniversityEventsManagement.Models.Notification>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = "إدارة الإشعارات";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .notification-stats-card {
+        background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+        color: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3);
+        transition: all 0.3s ease;
+        margin-bottom: 20px;
+    }
+
+    .notification-stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 20px rgba(111, 78, 55, 0.4);
+    }
+
+    .notification-stats-card h3 {
+        font-size: 32px;
+        font-weight: 700;
+        margin: 0;
+        color: white;
+    }
+
+    .notification-stats-card p {
+        font-size: 14px;
+        margin: 5px 0 0 0;
+        opacity: 0.9;
+    }
+
+    .notification-stats-card .icon {
+        font-size: 40px;
+        opacity: 0.8;
+        margin-bottom: 10px;
+    }
+
+    .stats-item {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 15px;
+        border-right: 4px solid #6F4E37;
+    }
+
+    .stats-item.sent {
+        border-right-color: #28a745;
+    }
+
+    .stats-item.pending {
+        border-right-color: #ffc107;
+    }
+
+    .stats-item.failed {
+        border-right-color: #dc3545;
+    }
+
+    .stats-item h4 {
+        color: #6F4E37;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .stats-item .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+    .stats-item .stat-label {
+        font-size: 14px;
+        color: #6c757d;
+        margin-top: 5px;
+    }
+
+    .notification-log-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+    }
+
+    .notification-log-card h3 {
+        color: #6F4E37;
+        font-weight: 700;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #EFE6DD;
+    }
+
+    .notification-item {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 15px;
+        border-right: 4px solid #6F4E37;
+        transition: all 0.3s ease;
+    }
+
+    .notification-item:hover {
+        background: #EFE6DD;
+        transform: translateX(-5px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.15);
+    }
+
+    .notification-item h5 {
+        color: #6F4E37;
+        font-weight: 600;
+        margin-bottom: 10px;
+    }
+
+    .notification-item p {
+        color: #6c757d;
+        margin-bottom: 10px;
+        line-height: 1.6;
+    }
+
+    .notification-item .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .notification-item .date {
+        color: #6c757d;
+        font-size: 14px;
+    }
+
+    .notification-item .recipients {
+        color: #6F4E37;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-status.sent {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .badge-status.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .badge-status.failed {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .btn-send-new {
+        background: linear-gradient(135deg, #6F4E37 0%, #A67C52 100%);
+        border: none;
+        color: white;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+    }
+
+    .btn-send-new:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+        color: white;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .empty-state h4 {
+        color: #6F4E37;
+        margin-bottom: 10px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-bell" style="color: #6F4E37;"></i> إدارة الإشعارات</h1>
+                <p class="text-muted mb-0">راجع إحصائيات الإشعارات وسجل الإرسال</p>
+            </div>
+            <div>
+                <a href="/Admin/SendNotifications" class="btn btn-send-new">
+                    <i class="fas fa-plus-circle"></i> إرسال إشعار جديد
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- إحصائيات الإشعارات -->
+        <div class="col-lg-4 mb-4">
+            <div class="notification-stats-card">
+                <div class="icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3>إحصائيات الإشعارات</h3>
+            </div>
+
+            <div class="stats-item">
+                <h4><i class="fas fa-bell" style="color: #6F4E37;"></i> إجمالي الإشعارات</h4>
+                <div class="stat-value" style="color: #6F4E37;">@ViewBag.TotalNotifications</div>
+                <div class="stat-label">جميع الإشعارات المرسلة</div>
+            </div>
+
+            <div class="stats-item sent">
+                <h4><i class="fas fa-check-circle" style="color: #28a745;"></i> تم الإرسال</h4>
+                <div class="stat-value" style="color: #28a745;">@ViewBag.SentNotifications</div>
+                <div class="stat-label">إشعارات تم إرسالها بنجاح</div>
+            </div>
+
+            <div class="stats-item pending">
+                <h4><i class="fas fa-clock" style="color: #ffc107;"></i> قيد الانتظار</h4>
+                <div class="stat-value" style="color: #ffc107;">@ViewBag.PendingNotifications</div>
+                <div class="stat-label">إشعارات في قائمة الانتظار</div>
+            </div>
+
+            <div class="stats-item failed">
+                <h4><i class="fas fa-times-circle" style="color: #dc3545;"></i> فشل الإرسال</h4>
+                <div class="stat-value" style="color: #dc3545;">@ViewBag.FailedNotifications</div>
+                <div class="stat-label">إشعارات فشل إرسالها</div>
+            </div>
+        </div>
+
+        <!-- سجل الإشعارات -->
+        <div class="col-lg-8">
+            <div class="notification-log-card">
+                <h3><i class="fas fa-list"></i> سجل الإشعارات</h3>
+
+                @if (Model == null || !Model.Any())
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <h4>لا توجد إشعارات</h4>
+                        <p>لم يتم إرسال أي إشعارات حتى الآن</p>
+                        <a href="/Admin/SendNotifications" class="btn btn-send-new mt-3">
+                            <i class="fas fa-plus-circle"></i> إرسال أول إشعار
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    var groupedNotifications = Model
+                        .GroupBy(n => new { n.Message, Date = n.SentDate.Date, n.NotificationType })
+                        .Select(g => new {
+                            Message = g.Key.Message,
+                            Date = g.Key.Date,
+                            NotificationType = g.Key.NotificationType,
+                            RecipientsCount = g.Count(),
+                            FirstNotification = g.First(),
+                            IsSent = g.First().SentDate <= DateTime.Now
+                        })
+                        .OrderByDescending(x => x.Date)
+                        .Take(10)
+                        .ToList();
+
+                    @foreach (var group in groupedNotifications)
+                    {
+                        var isSent = group.IsSent;
+                        var statusClass = isSent ? "sent" : "pending";
+                        var statusText = isSent ? "تم الإرسال" : "قيد الانتظار";
+                        var notification = group.FirstNotification;
+
+                        <div class="notification-item">
+                            <h5>
+                                @if (!string.IsNullOrEmpty(group.NotificationType))
+                                {
+                                    @switch (group.NotificationType)
+                                    {
+                                        case "EventReminder":
+                                            <i class="fas fa-calendar-check" style="color: #6F4E37;"></i>
+                                            <text>تذكير فعالية غداً</text>
+                                            break;
+                                        case "EventApproved":
+                                        case "EventUpdate":
+                                            <i class="fas fa-check-circle" style="color: #28a745;"></i>
+                                            <text>إعلان: فعالية جديدة</text>
+                                            break;
+                                        case "CertificateAvailable":
+                                            <i class="fas fa-certificate" style="color: #6F4E37;"></i>
+                                            <text>شهادة متاحة</text>
+                                            break;
+                                        case "AdminNotification":
+                                            <i class="fas fa-bullhorn" style="color: #6F4E37;"></i>
+                                            <text>إعلان إداري</text>
+                                            break;
+                                        default:
+                                            <i class="fas fa-bell" style="color: #6F4E37;"></i>
+                                            <text>إشعار عام</text>
+                                            break;
+                                    }
+                                }
+                                else
+                                {
+                                    <i class="fas fa-bell" style="color: #6F4E37;"></i>
+                                    <text>إشعار عام</text>
+                                }
+                            </h5>
+                            <p>@group.Message</p>
+                            <div class="meta">
+                                <div class="date">
+                                    <i class="fas fa-calendar"></i> @group.Date.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("ar-SA"))
+                                    @if (group.RecipientsCount > 1)
+                                    {
+                                        <text> - @group.RecipientsCount مستلم</text>
+                                    }
+                                    else
+                                    {
+                                        <text> - مستلم واحد</text>
+                                    }
+                                </div>
+                                <span class="badge-status @statusClass">
+                                    @statusText
+                                </span>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.Count > 10)
+                    {
+                        <div class="text-center mt-4">
+                            <p class="text-muted">عرض 10 من @Model.Count إشعار</p>
+                        </div>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

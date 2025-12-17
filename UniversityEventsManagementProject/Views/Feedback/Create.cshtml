@@ -1,0 +1,103 @@
+@model UniversityEventsManagement.Models.Feedback
+
+@{
+    ViewData["Title"] = "تقديم تقييم";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-star"></i> تقديم تقييم للفعالية</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <form method="post" asp-action="Create" asp-route-eventId="@ViewBag.EventId">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="eventId" value="@ViewBag.EventId" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                        @if (ViewBag.Event != null)
+                        {
+                            <div class="alert alert-info mb-3">
+                                <strong>الفعالية:</strong> @ViewBag.Event.Title
+                            </div>
+                        }
+
+                        <div class="mb-4">
+                            <label class="form-label">التقييم</label>
+                            <div class="rating mb-3">
+                                <div class="d-flex gap-2">
+                                    @for (int i = 1; i <= 5; i++)
+                                    {
+                                        <input type="radio" id="star@i" name="Rating" value="@i" style="display:none;">
+                                        <label for="star@i" class="star-label" style="font-size: 2rem; cursor: pointer;">
+                                            <i class="far fa-star" style="color: #ffc107;"></i>
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                            <span asp-validation-for="Rating" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Comment" class="form-label">التعليق</label>
+                            <textarea asp-for="Comment" class="form-control" rows="6" placeholder="شارك رأيك وملاحظاتك حول الفعالية..."></textarea>
+                            <span asp-validation-for="Comment" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane"></i> إرسال التقييم
+                            </button>
+                            <a href="javascript:history.back()" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-times"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-lightbulb"></i> نصائح للتقييم</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>كن صادقاً:</strong> شارك رأيك الحقيقي والموضوعي</p>
+                    <p><strong>كن محترماً:</strong> استخدم لغة احترافية وودية</p>
+                    <p><strong>كن مفيداً:</strong> قدم ملاحظات بناءة يمكن تحسينها</p>
+                    <p><strong>كن محدداً:</strong> اذكر أمثلة وتفاصيل محددة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.star-label').forEach(label => {
+        label.addEventListener('click', function() {
+            const rating = this.previousElementSibling.value;
+            document.querySelectorAll('.star-label i').forEach(star => {
+                star.classList.remove('fas');
+                star.classList.add('far');
+            });
+            for (let i = 1; i <= rating; i++) {
+                document.querySelector(`label[for="star${i}"] i`).classList.remove('far');
+                document.querySelector(`label[for="star${i}"] i`).classList.add('fas');
+            }
+        });
+    });
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

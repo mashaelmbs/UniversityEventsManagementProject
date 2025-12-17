@@ -1,0 +1,91 @@
+@model List<UniversityEventsManagement.Models.Certificate>
+@using Microsoft.Extensions.Localization
+@using UniversityEventsManagement.Resources
+@inject IStringLocalizer<SharedResources> Localizer
+
+@{
+    ViewData["Title"] = Localizer["ManageCertificates"];
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <div>
+                <h1 class="mb-1"><i class="fas fa-award"></i> إدارة الشهادات</h1>
+                <p class="text-muted mb-0">راجع حالات الشهادات وفعّل التحميل للطلاب.</p>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <a href="/Certificates/IssueCertificate" class="btn btn-primary">
+                    <i class="fas fa-plus-circle"></i> إصدار شهادات جديدة
+                </a>
+                <span class="badge bg-success fs-6 px-3 py-2">إجمالي الشهادات: @(Model?.Count ?? 0)</span>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i> لا توجد شهادات صادرة حالياً.
+        </div>
+    }
+    else
+    {
+        <div class="card shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>الطالب</th>
+                                <th>البريد</th>
+                                <th>الفعالية</th>
+                                <th>رقم الشهادة</th>
+                                <th>تاريخ الإصدار</th>
+                                <th>ساعات التطوع</th>
+                                <th>الحالة</th>
+                                <th class="text-center">الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cert in Model.OrderByDescending(c => c.IssueDate))
+                            {
+                                <tr>
+                                    <td>
+                                        <strong>@cert.User?.FirstName @cert.User?.LastName</strong>
+                                        <div class="text-muted small">@cert.User?.UniversityID</div>
+                                    </td>
+                                    <td>@cert.User?.Email</td>
+                                    <td>
+                                        <strong>@cert.Event?.Title</strong>
+                                        <div class="text-muted small">@cert.Event?.EventDate.ToString("dd/MM/yyyy")</div>
+                                    </td>
+                                    <td>@cert.CertificateNumber</td>
+                                    <td>@cert.IssueDate.ToString("dd/MM/yyyy")</td>
+                                    <td>@cert.Event?.VolunteerHours</td>
+                                    <td>
+                                        <span class="badge bg-@(cert.IsDownloaded ? "success" : "warning")">
+                                            @(cert.IsDownloaded ? "تم التحميل" : "في انتظار التحميل")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group">
+                                            <a href="/Certificates/Details/@cert.CertificateID" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="/Certificates/Download/@cert.CertificateID" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+

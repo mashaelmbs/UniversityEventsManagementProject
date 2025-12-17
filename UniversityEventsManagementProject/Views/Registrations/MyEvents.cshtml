@@ -1,0 +1,148 @@
+@model List<UniversityEventsManagement.Models.Registration>
+@using Microsoft.AspNetCore.Mvc.Localization
+@inject IViewLocalizer Localizer
+
+@{
+    ViewData["Title"] = Localizer["MyEvents"];
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    var totalRegistrations = Model.Count;
+    var confirmedRegistrations = Model.Count(r => r.Status == "Confirmed");
+    var waitlistRegistrations = Model.Count(r => r.Status == "Waitlist");
+    var upcomingEvents = Model.Count(r => r.Event.EventDate >= DateTime.Now);
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1><i class="fas fa-calendar-check"></i> @Localizer["MyRegisteredEvents"]</h1>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-primary">@totalRegistrations</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-calendar"></i> @Localizer["TotalRegistrations"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-success">@confirmedRegistrations</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-check-circle"></i> @Localizer["Confirmed"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-warning">@waitlistRegistrations</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-hourglass-half"></i> @Localizer["Waitlist"]</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-center border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <h3 class="text-info">@upcomingEvents</h3>
+                    <p class="text-muted mb-0"><i class="fas fa-calendar-day"></i> @Localizer["UpcomingEventsCount"]</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <div class="alert alert-info d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-info-circle"></i> @Localizer["NoRegistrations"]
+                <a href="/Events" class="alert-link">@Localizer["ExploreEvents"]</a>
+            </div>
+            @if (User.IsInRole("Admin"))
+            {
+                <a href="/Admin/ManageEvents" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-cog"></i> @Localizer["ManageEvents"]
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>@Localizer["EventNameCol"]</th>
+                        <th>@Localizer["DateAndTime"]</th>
+                        <th>@Localizer["Location"]</th>
+                        <th>@Localizer["Status"]</th>
+                        <th>@Localizer["RegistrationDate"]</th>
+                        <th>@Localizer["Actions"]</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var reg in Model.OrderByDescending(r => r.Event.EventDate))
+                    {
+                        <tr>
+                            <td>
+                                <strong>@reg.Event.Title</strong>
+                            </td>
+                            <td>
+                                <i class="fas fa-calendar"></i> @reg.Event.EventDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td>
+                                <i class="fas fa-map-marker-alt"></i> @reg.Event.Venue
+                            </td>
+                            <td>
+                                @{
+                                    var statusText = reg.Status == "Confirmed" ? Localizer["Confirmed"].Value : 
+                                                    reg.Status == "Waitlist" ? Localizer["Waitlist"].Value : 
+                                                    Localizer["Cancelled"].Value;
+                                }
+                                <span class="badge bg-@(reg.Status == "Confirmed" ? "success" : (reg.Status == "Waitlist" ? "warning" : "danger"))">
+                                    @statusText
+                                </span>
+                            </td>
+                            <td>
+                                @reg.RegistrationDate.ToString("dd/MM/yyyy")
+                            </td>
+                            <td>
+                                <a href="/Events/Details/@reg.Event.EventID" class="btn btn-sm btn-info" title="@Localizer["ViewDetailsTitle"]">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if (reg.Status == "Confirmed" && reg.Event.EventDate <= DateTime.Now && reg.Event.EventDate.AddHours(1).AddMinutes(30) >= DateTime.Now)
+                                {
+                                    @* زر تسجيل الحضور - يظهر فقط أثناء وقت الفعالية *@
+                                    <a href="/Attendance/CheckIn?eventId=@reg.Event.EventID" class="btn btn-sm btn-success" title="@Localizer["CheckInAttendance"]">
+                                        <i class="fas fa-qrcode"></i> @Localizer["CheckIn"]
+                                    </a>
+                                }
+                                else if (reg.Status == "Confirmed" && reg.Event.EventDate > DateTime.Now)
+                                {
+                                    @* الفعالية لم تبدأ بعد *@
+                                    <span class="badge bg-secondary" title="@Localizer["EventNotStarted"]">
+                                        <i class="fas fa-clock"></i> @Localizer["NotYet"]
+                                    </span>
+                                }
+                                @if (reg.Status != "Cancelled" && reg.Event.EventDate > DateTime.Now)
+                                {
+                                    <form method="post" action="/Registrations/CancelRegistration" style="display:inline;">
+                                        <input type="hidden" name="registrationId" value="@reg.RegistrationID">
+                                        <button type="submit" class="btn btn-sm btn-danger" title="@Localizer["CancelRegistration"]" onclick="return confirm('@Localizer["ConfirmCancelRegistration"]')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -1,0 +1,413 @@
+@model UniversityEventsManagement.Models.Contact
+
+@{
+    ViewData["Title"] = "تفاصيل الاستفسار";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    :root {
+        --brown-primary: #6F4E37;
+        --brown-secondary: #A67C52;
+        --brown-dark: #4B3621;
+        --brown-light: #EFE6DD;
+    }
+
+    .details-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .details-header h1 {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin: 0;
+    }
+
+    .btn-back {
+        background: #6c757d;
+        border: none;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .btn-back:hover {
+        background: #5a6268;
+        color: white;
+    }
+
+    .details-container {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    @@media (max-width: 768px) {
+        .details-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .inquiry-details-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border-right: 4px solid var(--brown-primary);
+    }
+
+    .inquiry-details-card h2 {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin-bottom: 25px;
+        font-size: 24px;
+    }
+
+    .detail-row {
+        margin-bottom: 20px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .detail-label {
+        color: var(--brown-primary);
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 8px;
+    }
+
+    .detail-value {
+        color: #6c757d;
+        font-size: 15px;
+        line-height: 1.6;
+    }
+
+    .detail-value a {
+        color: var(--brown-primary);
+        text-decoration: none;
+    }
+
+    .detail-value a:hover {
+        text-decoration: underline;
+    }
+
+    .message-box {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        border-right: 3px solid var(--brown-primary);
+    }
+
+    .message-box p {
+        margin: 0;
+        color: #6c757d;
+        line-height: 1.8;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .status-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .status-card h3 {
+        color: var(--brown-primary);
+        font-weight: 600;
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    .status-badge.resolved {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .status-badge.pending {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .type-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 15px;
+    }
+
+    .type-badge.question {
+        background-color: #e3f2fd;
+        color: #1976d2;
+    }
+
+    .type-badge.suggestion {
+        background-color: #f3e5f5;
+        color: #7b1fa2;
+    }
+
+    .type-badge.complaint {
+        background-color: #ffebee;
+        color: #c62828;
+    }
+
+    .response-section {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .response-section h3 {
+        color: var(--brown-primary);
+        font-weight: 600;
+        margin-bottom: 15px;
+        font-size: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        display: block;
+        color: var(--brown-primary);
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+
+    .form-group textarea {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 120px;
+        transition: all 0.3s ease;
+    }
+
+    .form-group textarea:focus {
+        outline: none;
+        border-color: var(--brown-primary);
+        box-shadow: 0 0 0 3px rgba(111, 78, 55, 0.1);
+    }
+
+    .btn-submit {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border: none;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 8px rgba(111, 78, 55, 0.3);
+        color: white;
+    }
+
+    .existing-response {
+        background: #e8f5e9;
+        padding: 15px;
+        border-radius: 8px;
+        border-right: 3px solid #2e7d32;
+        margin-bottom: 15px;
+    }
+
+    .existing-response strong {
+        color: #2e7d32;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    .existing-response p {
+        margin: 0;
+        color: #6c757d;
+        line-height: 1.6;
+    }
+
+    .existing-response small {
+        color: #999;
+        display: block;
+        margin-top: 8px;
+    }
+</style>
+
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="details-header">
+        <h1><i class="fas fa-envelope-open"></i> تفاصيل الاستفسار</h1>
+        <a href="/Contact/AdminInquiries" class="btn btn-back">
+            <i class="fas fa-arrow-right"></i> العودة
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+        </div>
+    }
+
+    <div class="details-container">
+        <!-- Main Content -->
+        <div>
+            <!-- Inquiry Details -->
+            <div class="inquiry-details-card">
+                <h2>@Model.Subject</h2>
+
+                <div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-user"></i> الاسم</div>
+                    <div class="detail-value">@Model.FullName</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-envelope"></i> البريد الإلكتروني</div>
+                    <div class="detail-value"><a href="mailto:@Model.Email">@Model.Email</a></div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-phone"></i> رقم الهاتف</div>
+                    <div class="detail-value"><a href="tel:@Model.PhoneNumber">@Model.PhoneNumber</a></div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-calendar"></i> تاريخ الاستقبال</div>
+                    <div class="detail-value">@Model.SubmittedDate.ToString("dd/MM/yyyy HH:mm")</div>
+                </div>
+
+                <div class="detail-row">
+                    <div class="detail-label"><i class="fas fa-message"></i> الرسالة</div>
+                    <div class="message-box">
+                        <p>@Model.Message</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Response Section -->
+            <div class="response-section" style="margin-top: 30px;">
+                <h3><i class="fas fa-reply"></i> الرد على الاستفسار</h3>
+
+                @if (Model.IsResolved && !string.IsNullOrEmpty(Model.AdminResponse))
+                {
+                    <div class="existing-response">
+                        <strong><i class="fas fa-check-circle"></i> تم الرد بالفعل</strong>
+                        <p>@Model.AdminResponse</p>
+                        <small><i class="fas fa-calendar"></i> @Model.ResponseDate?.ToString("dd/MM/yyyy HH:mm")</small>
+                    </div>
+                }
+
+                <form asp-action="Respond" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.ContactID" />
+
+                    <div class="form-group">
+                        <label for="AdminResponse">نص الرد *</label>
+                        <textarea id="AdminResponse" name="AdminResponse" required>@Model.AdminResponse</textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-submit">
+                        <i class="fas fa-send"></i> إرسال الرد
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Status Card -->
+            <div class="status-card">
+                <h3><i class="fas fa-info-circle"></i> معلومات الحالة</h3>
+
+                <div>
+                    <div style="margin-bottom: 15px;">
+                        <strong style="color: #6c757d; font-size: 13px;">نوع الاستفسار:</strong>
+                        <div style="margin-top: 8px;">
+                            <span class="type-badge @GetTypeBadgeClass(Model.InquiryType)">
+                                @GetTypeLabel(Model.InquiryType)
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <strong style="color: #6c757d; font-size: 13px;">حالة الاستفسار:</strong>
+                        <div style="margin-top: 8px;">
+                            <span class="status-badge @(Model.IsResolved ? "resolved" : "pending")">
+                                @(Model.IsResolved ? "✓ تم الرد" : "⏳ قيد الانتظار")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="status-card">
+                <h3><i class="fas fa-cogs"></i> الإجراءات</h3>
+                <form method="post" action="/Contact/Delete/@Model.ContactID" style="margin: 0;">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-back" style="width: 100%; background: #dc3545;" onclick="return confirm('هل أنت متأكد من حذف هذا الاستفسار؟')">
+                        <i class="fas fa-trash"></i> حذف الاستفسار
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@{
+    string GetTypeLabel(string type)
+    {
+        return type switch
+        {
+            "سؤال" => "سؤال",
+            "اقتراح" => "اقتراح",
+            "شكوى" => "شكوى",
+            _ => type
+        };
+    }
+
+    string GetTypeBadgeClass(string type)
+    {
+        return type switch
+        {
+            "سؤال" => "question",
+            "اقتراح" => "suggestion",
+            "شكوى" => "complaint",
+            _ => "question"
+        };
+    }
+}

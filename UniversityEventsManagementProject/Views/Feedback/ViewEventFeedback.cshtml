@@ -1,0 +1,126 @@
+@model dynamic
+@using UniversityEventsManagement.Models
+@{
+    ViewData["Title"] = "تقييمات الفعالية";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var eventId = Model?.Event?.EventID ?? 0;
+    var eventTitle = Model?.Event?.Title ?? "غير محدد";
+    var feedbacksList = Model?.Feedbacks as List<Feedback> ?? new List<Feedback>();
+}
+
+<style>
+    .feedback-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s ease;
+    }
+    .feedback-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .rating-stars {
+        color: #ffc107;
+        font-size: 20px;
+    }
+    .feedback-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .feedback-body {
+        padding: 20px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-comments"></i> تقييمات الفعالية: @eventTitle</h1>
+        <a href="/Events/Details/@eventId" class="btn btn-secondary">
+            <i class="fas fa-arrow-right"></i> العودة للفعالية
+        </a>
+    </div>
+
+    @if (feedbacksList != null && feedbacksList.Any())
+    {
+        var averageRating = feedbacksList.Average(f => f.Rating);
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-body text-center">
+                        <h5 class="text-muted">متوسط التقييم</h5>
+                        <h2 class="text-warning">
+                            @Math.Round(averageRating, 1) / 5.0
+                        </h2>
+                        <div class="rating-stars mt-2">
+                            @for (int i = 0; i < 5; i++)
+                            {
+                                if (i < Math.Round(averageRating))
+                                {
+                                    <i class="fas fa-star"></i>
+                                }
+                                else
+                                {
+                                    <i class="far fa-star"></i>
+                                }
+                            }
+                        </div>
+                        <p class="mt-2 text-muted">من @feedbacksList.Count تقييم</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (var feedback in feedbacksList.OrderByDescending(f => f.SubmittedDate))
+            {
+                <div class="col-md-6">
+                    <div class="card feedback-card">
+                        <div class="feedback-header">
+                            <div>
+                                <strong>@feedback.User?.FirstName @feedback.User?.LastName</strong>
+                                <br>
+                                <small class="text-muted">@feedback.User?.Email</small>
+                            </div>
+                            <div class="text-end">
+                                <div class="rating-stars">
+                                    @for (int i = 0; i < feedback.Rating; i++)
+                                    {
+                                        <i class="fas fa-star"></i>
+                                    }
+                                    @for (int i = feedback.Rating; i < 5; i++)
+                                    {
+                                        <i class="far fa-star"></i>
+                                    }
+                                </div>
+                                <small class="text-muted d-block mt-1">@feedback.SubmittedDate.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+                        <div class="feedback-body">
+                            <p>@feedback.Comment</p>
+                            <form asp-action="Delete" asp-controller="Feedback" method="post" style="display: inline;" onsubmit="return confirm('هل تريد حذف هذا التقييم؟');">
+                                <input type="hidden" name="feedbackId" value="@feedback.FeedbackID" />
+                                <button type="submit" class="btn btn-sm btn-danger">
+                                    <i class="fas fa-trash"></i> حذف
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                <p class="text-muted">لا توجد تقييمات لهذه الفعالية بعد</p>
+            </div>
+        </div>
+    }
+</div>
+

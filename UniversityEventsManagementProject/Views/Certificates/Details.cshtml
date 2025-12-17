@@ -1,0 +1,479 @@
+@model UniversityEventsManagement.Models.Certificate
+
+@{
+    ViewData["Title"] = "تفاصيل الشهادة";
+    if (User.IsInRole("Admin"))
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+}
+
+<style>
+    :root {
+        --brown-primary: #6F4E37;
+        --brown-secondary: #A67C52;
+        --brown-dark: #4B3621;
+        --brown-light: #EFE6DD;
+    }
+
+    .certificate-header {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 15px 15px 0 0;
+        text-align: center;
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3);
+    }
+
+    .certificate-header h1 {
+        color: white;
+        font-weight: 700;
+        margin: 0;
+        font-size: 2rem;
+    }
+
+    .certificate-header i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        opacity: 0.9;
+    }
+
+    .certificate-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 24px rgba(111, 78, 55, 0.15);
+        overflow: hidden;
+        border: 2px solid var(--brown-light);
+        transition: all 0.3s ease;
+    }
+
+    .certificate-card:hover {
+        box-shadow: 0 12px 32px rgba(111, 78, 55, 0.25);
+        transform: translateY(-5px);
+    }
+
+    .certificate-icon {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 25px;
+        box-shadow: 0 8px 20px rgba(111, 78, 55, 0.3);
+        animation: pulse 2s infinite;
+    }
+
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+    }
+
+    .certificate-icon i {
+        font-size: 4rem;
+        color: white;
+    }
+
+    .info-card {
+        background: var(--brown-light);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        border-right: 4px solid var(--brown-primary);
+        transition: all 0.3s ease;
+    }
+
+    .info-card:hover {
+        background: #E8D9C8;
+        transform: translateX(-5px);
+    }
+
+    .info-label {
+        color: var(--brown-primary);
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-value {
+        color: var(--brown-dark);
+        font-size: 1.1rem;
+        font-weight: 500;
+    }
+
+    .badge-custom {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        color: white;
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-weight: 600;
+        font-size: 1rem;
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3);
+    }
+
+    .badge-success {
+        background: linear-gradient(135deg, #28a745 0%, #5E8C3E 100%);
+    }
+
+    .badge-warning {
+        background: linear-gradient(135deg, #E2B13C 0%, #d4a017 100%);
+    }
+
+    .download-section {
+        background: linear-gradient(135deg, var(--brown-light) 0%, #F5EDE3 100%);
+        border-radius: 15px;
+        padding: 30px;
+        margin-top: 30px;
+        border: 2px solid var(--brown-primary);
+    }
+
+    .download-section h5 {
+        color: var(--brown-primary);
+        font-weight: 700;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+    .btn-language {
+        background: white;
+        border: 2px solid var(--brown-primary);
+        color: var(--brown-primary);
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-language:hover {
+        background: var(--brown-primary);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(111, 78, 55, 0.3);
+    }
+
+    .btn-language.active {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        color: white;
+        border-color: var(--brown-primary);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.4);
+    }
+
+    .btn-template {
+        background: white;
+        border: 2px solid var(--brown-secondary);
+        color: var(--brown-secondary);
+        padding: 15px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        flex: 1;
+    }
+
+    .btn-template:hover {
+        background: var(--brown-secondary);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 16px rgba(166, 124, 82, 0.3);
+    }
+
+    .btn-template.active {
+        background: linear-gradient(135deg, var(--brown-secondary) 0%, var(--brown-primary) 100%);
+        color: white;
+        border-color: var(--brown-secondary);
+        box-shadow: 0 4px 12px rgba(166, 124, 82, 0.4);
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        border: none;
+        color: white;
+        padding: 18px 40px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 1.2rem;
+        width: 100%;
+        transition: all 0.3s ease;
+        box-shadow: 0 6px 20px rgba(111, 78, 55, 0.4);
+        margin-top: 20px;
+    }
+
+    .btn-download:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 28px rgba(111, 78, 55, 0.5);
+        color: white;
+    }
+
+    .btn-download:active {
+        transform: translateY(-2px);
+    }
+
+    .sidebar-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 8px 24px rgba(111, 78, 55, 0.15);
+        overflow: hidden;
+        border: 2px solid var(--brown-light);
+    }
+
+    .sidebar-header {
+        background: linear-gradient(135deg, var(--brown-primary) 0%, var(--brown-secondary) 100%);
+        color: white;
+        padding: 20px;
+        font-weight: 700;
+    }
+
+    .sidebar-body {
+        padding: 25px;
+    }
+
+    .btn-outline-brown {
+        border: 2px solid var(--brown-primary);
+        color: var(--brown-primary);
+        background: white;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    .btn-outline-brown:hover {
+        background: var(--brown-primary);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(111, 78, 55, 0.3);
+    }
+
+    .event-type-badge {
+        background: linear-gradient(135deg, var(--brown-secondary) 0%, var(--brown-primary) 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+        display: inline-block;
+    }
+</style>
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="certificate-header">
+                <i class="fas fa-certificate"></i>
+                <h1>تفاصيل الشهادة</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="certificate-card">
+                <div class="card-body p-4">
+                    <div class="certificate-icon">
+                        <i class="fas fa-award"></i>
+                    </div>
+
+                    <h2 class="text-center mb-4" style="color: var(--brown-primary); font-weight: 700;">
+                        @(Model?.Event?.Title ?? "")
+                    </h2>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-user"></i> اسم الطالب
+                                </div>
+                                <div class="info-value">
+                                    @(Model?.User?.FirstName ?? "") @(Model?.User?.LastName ?? "")
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-id-card"></i> الرقم الجامعي
+                                </div>
+                                <div class="info-value">
+                                    @Model.User.UniversityID
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-certificate"></i> رقم الشهادة
+                                </div>
+                                <div class="info-value">
+                                    @Model.CertificateNumber
+                        </div>
+                    </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-calendar"></i> تاريخ الإصدار
+                                </div>
+                                <div class="info-value">
+                                    @Model.IssueDate.ToString("dd/MM/yyyy")
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-calendar-alt"></i> تاريخ الفعالية
+                                </div>
+                                <div class="info-value">
+                                    @Model.Event.EventDate.ToString("dd/MM/yyyy")
+                        </div>
+                    </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-hourglass-end"></i> ساعات التطوع
+                                </div>
+                                <div class="info-value">
+                                    <span class="badge-custom">@Model.Event.VolunteerHours ساعة</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-map-marker-alt"></i> مكان الفعالية
+                                </div>
+                                <div class="info-value">
+                                    @Model.Event.Venue
+                        </div>
+                    </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="info-card">
+                                <div class="info-label">
+                                    <i class="fas fa-check-circle"></i> حالة التحميل
+                                </div>
+                                <div class="info-value">
+                                @if (Model.IsDownloaded)
+                                {
+                                        <span class="badge-custom badge-success">تم التحميل</span>
+                                }
+                                else
+                                {
+                                        <span class="badge-custom badge-warning">لم يتم التحميل</span>
+                                }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="download-section">
+                        <h5><i class="fas fa-download"></i> تحميل الشهادة</h5>
+                        
+                        <div class="mb-4">
+                            <label class="form-label" style="color: var(--brown-primary); font-weight: 700; margin-bottom: 15px;">
+                                <i class="fas fa-globe"></i> اختر اللغة:
+                            </label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn-language active" data-lang="en" onclick="selectLanguage('en', this)">
+                                    <i class="fas fa-flag-usa"></i> English
+                                </button>
+                                <button type="button" class="btn-language" data-lang="ar" onclick="selectLanguage('ar', this)">
+                                    <i class="fas fa-flag-saudi-arabia"></i> العربية
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label" style="color: var(--brown-primary); font-weight: 700; margin-bottom: 15px;">
+                                <i class="fas fa-palette"></i> اختر القالب:
+                                </label>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="btn-template active" data-template="classic" onclick="selectTemplate('classic', this)">
+                                    <i class="fas fa-file-pdf"></i> كلاسيكي
+                                </button>
+                                <button type="button" class="btn-template" data-template="modern" onclick="selectTemplate('modern', this)">
+                                    <i class="fas fa-file-pdf"></i> حديث
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-download" onclick="downloadCertificate()">
+                            <i class="fas fa-download"></i> تحميل الشهادة
+                            </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="sidebar-card">
+                <div class="sidebar-header">
+                    <h5 class="mb-0"><i class="fas fa-info-circle"></i> معلومات إضافية</h5>
+                </div>
+                <div class="sidebar-body">
+                    <div class="mb-3">
+                        <strong style="color: var(--brown-primary);">نوع الفعالية:</strong>
+                        <p class="mt-2">
+                            <span class="event-type-badge">@Model.Event.EventType</span>
+                        </p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong style="color: var(--brown-primary);">وصف الفعالية:</strong>
+                        <p class="text-muted small mt-2" style="line-height: 1.8;">
+                            @Html.Raw(Model.Event.Description?.Length > 150 ? Model.Event.Description.Substring(0, 150) + "..." : Model.Event.Description)
+                        </p>
+                    </div>
+
+                    <hr style="border-color: var(--brown-light);">
+
+                    <div class="d-grid gap-2">
+                        <a href="/Certificates/MyCertificates" class="btn-outline-brown">
+                            <i class="fas fa-arrow-right"></i> العودة للقائمة
+                        </a>
+                        <a href="/Events/Details/@Model.EventID" class="btn-outline-brown">
+                            <i class="fas fa-calendar"></i> عرض الفعالية
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let selectedLanguage = 'en';
+    let selectedTemplate = 'classic';
+
+    function selectLanguage(lang, element) {
+        selectedLanguage = lang;
+        document.querySelectorAll('.btn-language').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function selectTemplate(template, element) {
+        selectedTemplate = template;
+        document.querySelectorAll('.btn-template').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        element.classList.add('active');
+    }
+
+    function downloadCertificate() {
+        const certificateId = @Model.CertificateID;
+        const downloadUrl = `/Certificates/Download/${certificateId}?template=${selectedTemplate}&language=${selectedLanguage}`;
+        window.location.href = downloadUrl;
+    }
+</script>
